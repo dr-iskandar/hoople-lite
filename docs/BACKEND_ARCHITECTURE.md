@@ -1,8 +1,10 @@
 # Hoople lite — Experience Backend Architecture Blueprint
 
-Status: **DESIGN / NOT IMPLEMENTED** · 30 October 2026 · v0.9
+Status: **DESIGN / P0 FOUNDATION PARTIALLY IMPLEMENTED** · 2 November 2026 · React v0.9 / API v0.1
 
 Target: multi-tenant SaaS for Indonesian EO, agencies, brands, companies and communities. The current React Sites demo uses local browser state and is **not** a secure production runtime.
+
+P0 code is now available at `apps/api`: Fastify/TypeScript liveness/readiness, PostgreSQL migration for `users`, `organizations`, `memberships`, and `audit_logs` with forced RLS, plus transaction-scoped org context. No authentication, CRUD/event API, real DB provisioning, or frontend integration exists yet.
 
 ## 1. Proposed technology
 
@@ -200,4 +202,4 @@ Checklist: tenant RLS + RBAC tests; secure session cookies/CSRF/CORS; rate limit
 
 Open decisions: monthly or per-event billing; anonymous vs OTP participants; private photo evidence vs gallery; reusable vs rotating QR; reward pickup workflow; company legal identity/support email; domain routing pattern.
 
-**No backend infrastructure, AI provider or payment processing has been provisioned.** This is a design blueprint, not a running SaaS backend.
+**No hosted backend infrastructure, AI provider or payment processing has been provisioned.** The new local API foundation provides health checks and schema scaffolding only; this remains a design blueprint for the actual event/participant backend.

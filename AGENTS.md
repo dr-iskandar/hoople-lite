@@ -32,14 +32,14 @@ This instruction file is for Codex, Claude Code, Cursor, Gemini and other AI-ass
 1. State scope and acceptance criteria. Identify affected components, data and side effects.
 2. Work only within the requested scope. Preserve unrelated edits and existing demo compatibility.
 3. Prefer the smallest patch. Do not silently rewrite architecture or install dependencies.
-4. Run `npm ci`, `npm test`, `npm run build`, and `git diff --check`. Visually verify desktop and mobile for UI changes.
+4. Run `npm ci`, `npm test`, `npm run build`, and `git diff --check`. For API changes also run `npm ci --prefix apps/api`, `npm run api:test`, `npm run api:build`. Visually verify desktop and mobile for UI changes.
 5. Smoke-test relevant onboarding, editor, mission modal/reorder, rewards, branded preview, ID/EN, scheduled launch and legal/camera notices.
 6. Report files changed, verification results, limitations, security implications and TODOs.
 7. Commit to a feature branch, push to `origin`, open a PR to `main`; merge only after checks and human review.
 
 ## Non-negotiable security / truthfulness
 
-- This is a frontend `localStorage` prototype; AI wizard uses local templates/JSON import. **No production backend, payment gateway, account system, server-authoritative QR or secure scheduled embargo exists.**
+- The frontend is a `localStorage` prototype; AI wizard uses local templates/JSON import. `apps/api` contains only P0 scaffolding and is not wired to the frontend. **No operational event backend, payment gateway, account system, server-authoritative QR or secure scheduled embargo exists.**
 - A working prototype button is not evidence of production readiness. Clearly identify simulations.
 - Do not delete historical `questpop-*` browser storage keys without a tested migration plan.
 - Add tests for logic changes. Reproduce bugs before fixing. Never claim tests passed unless executed.
