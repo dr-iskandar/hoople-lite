@@ -2,6 +2,8 @@
 
 Hoople lite is a bilingual (Bahasa Indonesia / English) interactive experience builder for event organizers, brands and communities. This package contains the React/Vite source, bundled assets, product timeline and backend planning documents.
 
+**Development status:** the frontend remains a browser-only demo. A separate **P0 API foundation** now exists in [`apps/api`](apps/api/README.md) (Fastify, TypeScript, PostgreSQL migrations, tenant transaction helper and health checks), but is **not connected to the React app**, and has no live authentication, event persistence, billing or participant data.
+
 **Source of truth:** [github.com/dr-iskandar/hoople-lite](https://github.com/dr-iskandar/hoople-lite). This is the public developer repository; the owner-private ChatGPT Sites preview is a separate deployment and is **not automatically updated** by GitHub pushes.
 
 ## Developer start here
@@ -28,6 +30,17 @@ npm run build
 npm run preview
 ```
 
+### Backend foundation (separate process)
+
+```bash
+npm ci --prefix apps/api
+npm run api:test
+npm run api:build
+npm run api:dev
+```
+
+See [`apps/api/README.md`](apps/api/README.md) for PostgreSQL setup, migration steps, endpoints and security limits. Database integration testing requires a PostgreSQL instance and is not part of the in-memory tests.
+
 `dist/` is a generated local build artifact (not committed to GitHub). No API keys are required for this browser-only prototype.
 
 ## What is included
@@ -42,7 +55,7 @@ npm run preview
 
 ## Current limitations
 
-**This is a prototype, not a production event platform.** Creator records currently live in `localStorage`. The AI wizard can create template-based drafts and import external AI-generated JSON; it does not call an LLM API. Payment checkout, secure QR verification, user accounts, cloud media uploads, actual custom domains, ticketing, class booking, face recognition and automated event entry/exit are **not implemented**.
+**This is a prototype, not a production event platform.** Creator records currently live in `localStorage`. The AI wizard can create template-based drafts and import external AI-generated JSON; it does not call an LLM API. Payment checkout, secure QR verification, user accounts, cloud media uploads, actual custom domains, ticketing, class booking, face recognition and automated event entry/exit are **not implemented**. P0 API health checks do not make these features operational.
 
 The `#play` demo URL contains a client-readable experience payload. Do not use this architecture for real attendee records, secrets, payment flows, secure prize redemption or genuine event access control. See [backend architecture](docs/BACKEND_ARCHITECTURE.md) for recommended server enforcement, and [platform roadmap](docs/EVENT_PLATFORM_ROADMAP.md) for the next modules.
 
@@ -64,6 +77,7 @@ The `#play` demo URL contains a client-readable experience payload. Do not use t
 | `docs/DEVELOPER_HANDOFF.md` | How the project works and what to build next |
 | `docs/VIBE_CODING_WORKFLOW.md` | Read/test/push/PR conventions for AI-assisted development |
 | `.github/` | CI verification and pull request checklist |
+| `apps/api/` | Separate P0 backend foundation, database migration and tests (not yet connected) |
 
 ### Data migration note
 

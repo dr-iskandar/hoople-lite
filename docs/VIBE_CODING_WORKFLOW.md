@@ -35,6 +35,9 @@ Run:
 npm ci
 npm test
 npm run build
+npm ci --prefix apps/api
+npm run api:test
+npm run api:build
 git diff --check
 git status --short
 ```

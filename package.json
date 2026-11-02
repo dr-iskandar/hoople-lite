@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "test": "node --test tests/*.test.js",
+    "api:dev": "npm --prefix apps/api run dev",
+    "api:test": "npm --prefix apps/api run test",
+    "api:build": "npm --prefix apps/api run build",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0"
   },

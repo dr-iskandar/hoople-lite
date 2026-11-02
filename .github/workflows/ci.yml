@@ -25,3 +25,9 @@ jobs:
         run: npm test
       - name: Build frontend
         run: npm run build
+      - name: Install API dependencies
+        run: npm ci --prefix apps/api
+      - name: Test backend foundation
+        run: npm run api:test
+      - name: Typecheck and build backend
+        run: npm run api:build
