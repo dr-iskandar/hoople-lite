@@ -2,7 +2,7 @@
 
 Hoople lite is a bilingual (Bahasa Indonesia / English) interactive experience builder for event organizers, brands and communities. This package contains the React/Vite source, bundled assets, product timeline and backend planning documents.
 
-**Development status:** the frontend remains a browser-only demo. A separate **P0 API foundation** now exists in [`apps/api`](apps/api/README.md) (Fastify, TypeScript, PostgreSQL migrations, tenant transaction helper and health checks), but is **not connected to the React app**, and has no live authentication, event persistence, billing or participant data.
+**Development status:** the frontend remains a browser-only demo. A separate **Stage 1 API in progress** exists in [`apps/api`](apps/api/README.md), with OIDC/session routes, creator workspaces and PostgreSQL schemas for brand kits, experiences and missions. This is **not connected to React or a deployed production database/IdP**. No live event persistence, billing or participant data exists yet.
 
 **Source of truth:** [github.com/dr-iskandar/hoople-lite](https://github.com/dr-iskandar/hoople-lite). This is the public developer repository; the owner-private ChatGPT Sites preview is a separate deployment and is **not automatically updated** by GitHub pushes.
 
@@ -77,7 +77,7 @@ The `#play` demo URL contains a client-readable experience payload. Do not use t
 | `docs/DEVELOPER_HANDOFF.md` | How the project works and what to build next |
 | `docs/VIBE_CODING_WORKFLOW.md` | Read/test/push/PR conventions for AI-assisted development |
 | `.github/` | CI verification and pull request checklist |
-| `apps/api/` | Separate P0 backend foundation, database migration and tests (not yet connected) |
+| `apps/api/` | Separate identity/workspace API, database schemas and tests (not yet connected to React) |
 
 ### Data migration note
 

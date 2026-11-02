@@ -6,7 +6,7 @@ Last updated: 2 November 2026. Canonical source: `https://github.com/dr-iskandar
 
 Hoople lite lets Indonesian event organizers, agencies, brands and communities build browser-based interactive activities. The present application is a **React/Vite frontend prototype**, not an operating SaaS. The larger Hoople vision is an end-to-end event and community platform; no release dates are committed.
 
-**P0 foundation in progress:** `apps/api` now contains Fastify/TypeScript health routes, a PostgreSQL migration for identity/organization/membership/audit tables, forced RLS policies, and a tenant transaction helper with unit tests. The API is not connected to the frontend; database migration against a real PostgreSQL instance, login and RBAC are still pending.
+**P0 foundation + Stage 1 identity/schema code:** `apps/api` now contains Fastify/TypeScript health checks, creator OIDC code/PKCE + cookie session routes, organization CRUD (archive-on-delete), workspace selection and SQL migrations for the original identity/organization/audit tables plus creator sessions, brand kits, experiences and missions. RLS and owner/admin checks are enforced by code/policies. The API is not connected to React or a real staging IdP; CI now tests PostgreSQL tenant isolation.
 
 This product evolved iteratively from a quest studio into a hybrid editor with branding, ID/EN, quest-style onboarding, mission types, rewards, simulated scheduling, AI-assisted draft templates and a five-stage roadmap. It was rebranded from QuestPop to Hoople lite with the owner's logo and purple/black/white identity. Historical `questpop-*` browser storage keys remain for backwards compatibility.
 
@@ -63,8 +63,8 @@ Styling lives in component CSS plus inherited global styles. Check cascade, focu
 ### P0 — Foundation
 
 - A separate `apps/api` folder has been introduced without moving the React app; decide whether to retain this layout or formally migrate to a monorepo with `apps/web`.
-- Existing: health/readiness routes, initial org/users/memberships/audit SQL with FORCE RLS, tenant transaction helper, API test/build pipeline.
-- Next: real PostgreSQL integration tests, DB app/migrator role grants and cross-tenant denial checks; then staging, authentication/OIDC, authorization/RBAC, session management, logging, secret management and backups.
+- Existing in the PR: health/readiness routes, OIDC session exchange, creator organization CRUD, active workspace selection, identity + draft builder migrations with RLS, CI Postgres test and runtime grant script.
+- Next: merge only after CI/PostgreSQL review, create staging with separately provisioned DB runtime/migrator roles and a real OIDC provider, then do interactive end-to-end login and cookie/CORS security tests. Audit migration/RLS semantics before any real customers.
 - Add component and end-to-end tests, formatting/lint/type checks and monitoring.
 - Obtain legal/product decisions on pricing, privacy, refund ownership and support identity.
 

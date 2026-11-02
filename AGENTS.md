@@ -39,7 +39,7 @@ This instruction file is for Codex, Claude Code, Cursor, Gemini and other AI-ass
 
 ## Non-negotiable security / truthfulness
 
-- The frontend is a `localStorage` prototype; AI wizard uses local templates/JSON import. `apps/api` contains only P0 scaffolding and is not wired to the frontend. **No operational event backend, payment gateway, account system, server-authoritative QR or secure scheduled embargo exists.**
+- The frontend is a `localStorage` prototype; AI wizard uses local templates/JSON import. `apps/api` now includes Stage 1 OIDC/session/workspace routes and draft SQL schema, but is **not connected to the frontend** or to provisioned production infrastructure. **No operational event backend, payment gateway, attendee account system, server-authoritative QR or secure scheduled embargo exists.**
 - A working prototype button is not evidence of production readiness. Clearly identify simulations.
 - Do not delete historical `questpop-*` browser storage keys without a tested migration plan.
 - Add tests for logic changes. Reproduce bugs before fixing. Never claim tests passed unless executed.

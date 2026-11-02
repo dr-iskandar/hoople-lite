@@ -1,10 +1,13 @@
 import { buildApp } from './app.js';
 import { readConfig } from './config.js';
 import { createPool } from './db/pool.js';
+import { createOidcProvider, parseAuthSettings } from './creator-auth.js';
 
 const config = readConfig();
+const authSettings = parseAuthSettings();
 const pool = createPool(config.databaseUrl);
-const app = buildApp(pool);
+const app = buildApp(pool, { settings: authSettings,
+  provider: authSettings ? createOidcProvider(authSettings) : undefined });
 
 app.addHook('onClose', async () => { await pool?.end(); });
 
@@ -19,6 +22,7 @@ try {
   await app.listen({ host: config.host, port: config.port });
   console.info(`Hoople lite API listening on ${config.host}:${config.port}`);
   if (!pool) console.warn('DATABASE_URL not set: readiness endpoint will return 503');
+  if (!authSettings) console.warn('OIDC not configured: creator login will return 503');
 } catch (error) {
   console.error('API startup failed', error instanceof Error ? error.message : 'unknown error');
   await app.close();
