@@ -1,10 +1,10 @@
 # Hoople lite — Experience Backend Architecture Blueprint
 
-Status: **DESIGN / P0 AND STAGE 1 AUTH-SCHEMA IN DEVELOPMENT** · 2 November 2026 · React v0.9 / API v0.1
+Status: **DESIGN / STAGE 1 AUTH + PRIVATE DRAFT CRUD IMPLEMENTED IN CODE** · 2 November 2026 · React v0.9 / API v0.1
 
 Target: multi-tenant SaaS for Indonesian EO, agencies, brands, companies and communities. The current React Sites demo uses local browser state and is **not** a secure production runtime.
 
-Code in `apps/api` now includes Fastify liveness/readiness, OIDC creator login and cookie sessions, organization/workspace routes, PostgreSQL identity, `brand_kits`, `experiences` and `missions` schemas with forced RLS. Real OIDC provider/database staging, event CRUD, frontend integration and real participant runtime do not exist yet.
+Code in `apps/api` now includes Fastify liveness/readiness, OIDC creator login and cookie sessions, organization/workspace routes, private organization-scoped `brand_kits`, `experiences` and `missions` draft CRUD, revision checking, server-held mission validation fields and one-way legacy import. Schemas enforce RLS. React dashboard optionally calls session/workspace/import routes, **but its interactive editor remains localStorage-only**. Real OIDC provider/database staging, live events, immutable publication and participant runtime do not exist yet.
 
 ## 1. Proposed technology
 
@@ -202,4 +202,4 @@ Checklist: tenant RLS + RBAC tests; secure session cookies/CSRF/CORS; rate limit
 
 Open decisions: monthly or per-event billing; anonymous vs OTP participants; private photo evidence vs gallery; reusable vs rotating QR; reward pickup workflow; company legal identity/support email; domain routing pattern.
 
-**No hosted backend infrastructure, AI provider or payment processing has been provisioned.** The new local API foundation provides health checks and schema scaffolding only; this remains a design blueprint for the actual event/participant backend.
+**No hosted backend infrastructure, AI provider or payment processing has been provisioned.** The local API foundation includes authenticated organizer draft CRUD and optional dashboard workspace/import wiring, but no editor cloud autosave, public distribution or trusted participant engine. This remains a design blueprint for the actual event/participant backend.

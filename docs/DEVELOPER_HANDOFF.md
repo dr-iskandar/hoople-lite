@@ -6,7 +6,7 @@ Last updated: 2 November 2026. Canonical source: `https://github.com/dr-iskandar
 
 Hoople lite lets Indonesian event organizers, agencies, brands and communities build browser-based interactive activities. The present application is a **React/Vite frontend prototype**, not an operating SaaS. The larger Hoople vision is an end-to-end event and community platform; no release dates are committed.
 
-**P0 foundation + Stage 1 identity/schema code:** `apps/api` now contains Fastify/TypeScript health checks, creator OIDC code/PKCE + cookie session routes, organization CRUD (archive-on-delete), workspace selection and SQL migrations for the original identity/organization/audit tables plus creator sessions, brand kits, experiences and missions. RLS and owner/admin checks are enforced by code/policies. The API is not connected to React or a real staging IdP; CI now tests PostgreSQL tenant isolation.
+**P0 + Stage 1 private draft CRUD code:** `apps/api` contains Fastify/TypeScript health checks, creator OIDC code/PKCE + cookie sessions, organization/workspace CRUD, authenticated brand kit/experience/mission draft CRUD, legacy import, and PostgreSQL migrations for identities, organizations, audit, sessions and builder entities. RLS and role checks are enforced in code/policies. React dashboard offers **opt-in** session/workspace and one-way import if `VITE_API_BASE_URL` is set; the interactive editor is still localStorage-based. No real staging IdP or live production database has been configured.
 
 This product evolved iteratively from a quest studio into a hybrid editor with branding, ID/EN, quest-style onboarding, mission types, rewards, simulated scheduling, AI-assisted draft templates and a five-stage roadmap. It was rebranded from QuestPop to Hoople lite with the owner's logo and purple/black/white identity. Historical `questpop-*` browser storage keys remain for backwards compatibility.
 
@@ -25,9 +25,9 @@ This product evolved iteratively from a quest studio into a hybrid editor with b
 | Area | Current implementation | Production direction |
 | --- | --- | --- |
 | UI | React 19, Vite 6, CSS, lucide-react | Retain bilingual and mobile-first UX |
-| Storage | `localStorage` (`questpop-studio-v1`) | Authenticated PostgreSQL API, tenant isolation |
+| Storage | Editor: `localStorage` (`questpop-studio-v1`); optional one-way draft cloud import | Authenticated cloud editor autosave, conflict handling and tenant isolation |
 | Navigation | URL hash (`#studio`, `#play=`) | Proper routing + opaque public event URLs |
-| Missions | Client-side CRUD / drag order | Transactional versioned mission APIs |
+| Missions | Client-side CRUD / drag order; authenticated private API draft CRUD is available | Cloud-bound builder and immutable published versions |
 | Points and rewards | Browser demo | Server validation, ledger, stock locking |
 | QR and camera | Browser API and first-use disclosure | Server-issued QR tokens + moderated media |
 | Quiz | Multiple-choice answers in client | Server-held answer keys and rate limiting |
@@ -43,6 +43,7 @@ This product evolved iteratively from a quest studio into a hybrid editor with b
 | Files | Responsibility |
 | --- | --- |
 | `src/main.jsx`, `src/data.js` | App shell, routes, storage, experience models |
+| `src/WorkspacePanel.jsx`, `src/cloudApi.js`, `src/workspace-cloud.css` | Opt-in creator session, active workspace, create workspace, and deliberate one-way browser draft copy |
 | `src/Builder.jsx`, `src/MissionInspector.jsx`, `src/mission-modal.css` | Hybrid builder, mission drag/drop, create/edit modal |
 | `src/RewardInspector.jsx`, `src/reward-schedule.css` | Reward image, points/conditions and short terms |
 | `src/BrandingInspector.jsx`, `src/brand.css` | Branding, assets, desktop/mobile crop |
@@ -54,7 +55,7 @@ This product evolved iteratively from a quest studio into a hybrid editor with b
 | `src/LegalDialog.jsx` | Draft legal, privacy, camera, refund copy; needs legal review |
 | `src/hoople-lite.css`, `hoople-wordmark.png`, `hoople-favicon.svg` | Hoople identity assets |
 | `tests/` | Pure-logic regression tests with Node built-in test runner |
-| `apps/api/` | Independent Fastify TypeScript service, SQL migration and backend unit tests |
+| `apps/api/` | Fastify TypeScript auth/workspace/draft CRUD service, SQL migrations, backend integration tests |
 
 Styling lives in component CSS plus inherited global styles. Check cascade, focus/keyboard behavior, mobile layout and both languages before delivery. Not every text string is centralized in `i18n.jsx`.
 
@@ -63,14 +64,15 @@ Styling lives in component CSS plus inherited global styles. Check cascade, focu
 ### P0 — Foundation
 
 - A separate `apps/api` folder has been introduced without moving the React app; decide whether to retain this layout or formally migrate to a monorepo with `apps/web`.
-- Existing in the PR: health/readiness routes, OIDC session exchange, creator organization CRUD, active workspace selection, identity + draft builder migrations with RLS, CI Postgres test and runtime grant script.
+- Current implementation: health/readiness, OIDC sessions, organization CRUD and active workspace, creator draft CRUD and one-way import, identity + builder migrations with RLS, CI Postgres test and runtime grant script.
 - Next: merge only after CI/PostgreSQL review, create staging with separately provisioned DB runtime/migrator roles and a real OIDC provider, then do interactive end-to-end login and cookie/CORS security tests. Audit migration/RLS semantics before any real customers.
 - Add component and end-to-end tests, formatting/lint/type checks and monitoring.
 - Obtain legal/product decisions on pricing, privacy, refund ownership and support identity.
 
 ### P1 — Make Hoople lite authoritative
 
-- Move CRUD, brand kits and published versions to authenticated API; preserve old local drafts via explicit import/migration.
+- Wire the **interactive builder** to server-side draft CRUD (currently API + dashboard import only), with optimistic conflict UX and a safe read-before-write migration strategy. Keep `questpop-*` keys intact.
+- Add asset upload endpoints and moderation for local photos/brand covers omitted from import; never embed media blobs into arbitrary JSON.
 - Implement server-side verification for check-in, QR, photo evidence and quiz; prevent answer/QR secret leaks.
 - Add point ledger, idempotent mission completions, atomic reward inventory/claim and audit trail.
 - Move media to private upload/quarantine, moderation, EXIF stripping, retention and user deletion.

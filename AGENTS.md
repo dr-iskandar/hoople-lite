@@ -39,7 +39,8 @@ This instruction file is for Codex, Claude Code, Cursor, Gemini and other AI-ass
 
 ## Non-negotiable security / truthfulness
 
-- The frontend is a `localStorage` prototype; AI wizard uses local templates/JSON import. `apps/api` now includes Stage 1 OIDC/session/workspace routes and draft SQL schema, but is **not connected to the frontend** or to provisioned production infrastructure. **No operational event backend, payment gateway, attendee account system, server-authoritative QR or secure scheduled embargo exists.**
+- The editor is a `localStorage` prototype; AI wizard uses local templates/JSON import. The dashboard now offers **opt-in** API session/workspace access and a one-way import into cloud *drafts* when `VITE_API_BASE_URL` is configured. `apps/api` includes Stage 1 OIDC/session/workspace and authenticated draft CRUD, but has **no provisioned production infrastructure or browser-to-server autosave**. **No operational event backend, payment gateway, attendee account system, server-authoritative QR or secure scheduled embargo exists.**
+- Importing to a cloud draft must never delete, overwrite, or silently replace `questpop-*` local data. Private validation material must never enter public responses. Do not infer deployment readiness from scaffold code.
 - A working prototype button is not evidence of production readiness. Clearly identify simulations.
 - Do not delete historical `questpop-*` browser storage keys without a tested migration plan.
 - Add tests for logic changes. Reproduce bugs before fixing. Never claim tests passed unless executed.

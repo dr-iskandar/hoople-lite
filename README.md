@@ -2,7 +2,7 @@
 
 Hoople lite is a bilingual (Bahasa Indonesia / English) interactive experience builder for event organizers, brands and communities. This package contains the React/Vite source, bundled assets, product timeline and backend planning documents.
 
-**Development status:** the frontend remains a browser-only demo. A separate **Stage 1 API in progress** exists in [`apps/api`](apps/api/README.md), with OIDC/session routes, creator workspaces and PostgreSQL schemas for brand kits, experiences and missions. This is **not connected to React or a deployed production database/IdP**. No live event persistence, billing or participant data exists yet.
+**Development status:** the experience editor and participant preview remain a browser-only demo. The dashboard now has an **optional connection** to the Stage 1 API (`apps/api`), including creator sessions, organization workspaces, authenticated brand-kit / experience / mission draft CRUD, and an explicit one-way import of local drafts. It requires separately configured PostgreSQL and OIDC; no deployed production service, cloud editor autosave, live event persistence, billing or participant engine exists yet.
 
 **Source of truth:** [github.com/dr-iskandar/hoople-lite](https://github.com/dr-iskandar/hoople-lite). This is the public developer repository; the owner-private ChatGPT Sites preview is a separate deployment and is **not automatically updated** by GitHub pushes.
 
@@ -41,7 +41,9 @@ npm run api:dev
 
 See [`apps/api/README.md`](apps/api/README.md) for PostgreSQL setup, migration steps, endpoints and security limits. Database integration testing requires a PostgreSQL instance and is not part of the in-memory tests.
 
-`dist/` is a generated local build artifact (not committed to GitHub). No API keys are required for this browser-only prototype.
+To offer creator login/workspace/import in the React dashboard, copy the **root** `.env.example` to `.env.local` and set `VITE_API_BASE_URL` to the API origin (e.g. `http://localhost:4000`), then restart Vite. Configure `WEB_ORIGIN` to the exact Vite origin (typically `http://localhost:5173`) on the API, and provide PostgreSQL and OIDC credentials **only on the API side**. Without `VITE_API_BASE_URL`, browser demo mode works unchanged. API and web should share a site under production HTTPS so SameSite cookies work as expected; test cross-origin login and cookie behavior in staging.
+
+`dist/` is a generated local build artifact (not committed to GitHub). No API keys are required for the browser-only demo.
 
 ## What is included
 
@@ -52,10 +54,11 @@ See [`apps/api/README.md`](apps/api/README.md) for PostgreSQL setup, migration s
 - Reusable brand kits, desktop/mobile covers, crop tools, reward images and short reward terms.
 - Scheduled event access preview, illustrative pricing, bilingual legal-policy drafts and AI wizard / JSON import.
 - The official Hoople wordmark supplied by the project owner, with a separate small `lite` treatment.
+- Optional creator session status, active workspace selection/creation and deliberate import of old `questpop-*` browser drafts into authenticated cloud drafts. The local drafts are **retained**.
 
 ## Current limitations
 
-**This is a prototype, not a production event platform.** Creator records currently live in `localStorage`. The AI wizard can create template-based drafts and import external AI-generated JSON; it does not call an LLM API. Payment checkout, secure QR verification, user accounts, cloud media uploads, actual custom domains, ticketing, class booking, face recognition and automated event entry/exit are **not implemented**. P0 API health checks do not make these features operational.
+**This is a prototype, not a production event platform.** The interactive editor still reads/writes `localStorage`; importing copies data to authenticated API drafts but does **not** activate automatic cloud editing, public event URLs or authoritative launches. Base64 images are omitted from cloud copies pending a controlled upload service; local originals remain untouched. The AI wizard can create template-based drafts and import external AI-generated JSON; it does not call an LLM API. Payment checkout, secure QR verification, attendee user accounts, cloud media uploads, actual custom domains, ticketing, class booking, face recognition and automated event entry/exit are **not implemented**.
 
 The `#play` demo URL contains a client-readable experience payload. Do not use this architecture for real attendee records, secrets, payment flows, secure prize redemption or genuine event access control. See [backend architecture](docs/BACKEND_ARCHITECTURE.md) for recommended server enforcement, and [platform roadmap](docs/EVENT_PLATFORM_ROADMAP.md) for the next modules.
 
@@ -64,6 +67,7 @@ The `#play` demo URL contains a client-readable experience payload. Do not use t
 | Path | Purpose |
 | --- | --- |
 | `src/main.jsx` | App shell, navigation and creator dashboard |
+| `src/WorkspacePanel.jsx`, `src/cloudApi.js` | Opt-in creator session/workspace panel and one-way draft import |
 | `src/Landing.jsx` | Landing page and interactive preview |
 | `src/RoadmapTimeline.jsx` | Clickable, bilingual product timeline |
 | `src/roadmap-timeline.css` | Timeline responsive styles |
@@ -77,11 +81,11 @@ The `#play` demo URL contains a client-readable experience payload. Do not use t
 | `docs/DEVELOPER_HANDOFF.md` | How the project works and what to build next |
 | `docs/VIBE_CODING_WORKFLOW.md` | Read/test/push/PR conventions for AI-assisted development |
 | `.github/` | CI verification and pull request checklist |
-| `apps/api/` | Separate identity/workspace API, database schemas and tests (not yet connected to React) |
+| `apps/api/` | Creator identity/workspace and private draft CRUD API, database migrations and tests |
 
 ### Data migration note
 
-Existing prototype browser storage deliberately keeps its historical `questpop-*` keys for compatibility with earlier versions. This does not affect the Hoople lite branding and prevents previous demo drafts from being lost during the rename.
+Existing prototype browser storage deliberately keeps its historical `questpop-*` keys for compatibility. The dashboard can **copy** experience drafts from `questpop-studio-v1` into an active cloud workspace when API auth is configured. Import is idempotent per `(organization_id, legacy_draft_id)`; a second import skips the existing cloud draft instead of overwriting it. Browser drafts are not deleted or replaced. Images stored as `data:` URLs cannot yet be uploaded; the import omits them and indicates that they will need re-uploading later.
 
 ## Handoff
 

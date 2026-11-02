@@ -11,6 +11,7 @@ import Builder from './Builder';
 import Player from './Player';
 import EventWizard from './EventWizard';
 import LegalDialog from './LegalDialog';
+import WorkspacePanel from './WorkspacePanel';
 import {displayExperienceStatus,formatRelease,isReleaseScheduled} from './release';
 import './styles.css';
 import './refresh.css';
@@ -23,13 +24,13 @@ import './hoople-lite.css';
 
 const menu=[{id:'dashboard',key:'overview',Icon:LayoutDashboard},{id:'projects',key:'experiences',Icon:Layers3},{id:'wizard',key:'wizard',Icon:MessageCircle},{id:'templates',key:'templates',Icon:Ticket},{id:'analytics',key:'analytics',Icon:BarChart3},{id:'tutorial',key:'tutorial',Icon:BookOpen}];
 const experienceIcons={passport:Ticket,hunt:Compass,quiz:BookOpen};
-function Sidebar({screen,onGo,onLanding,onNew,onLegal,open}){
+function Sidebar({screen,onGo,onLanding,onNew,onLegal,onWorkspace,workspaceName,open}){
   const {t,locale}=useLocale();
   const help=locale==='en'?{heading:'HELP & INFO',guide:'Quick guide',guideDesc:'5 steps, hands-on',info:'About this demo'}:{heading:'BANTUAN & INFO',guide:'Panduan singkat',guideDesc:'5 langkah, langsung praktik',info:'Informasi demo'};
   return <aside className={'sidebar '+(open?'is-open':'')} aria-label={locale==='en'?'Studio navigation':'Navigasi Studio'}>
     <button className="sidebar-logo" onClick={onLanding} aria-label="Hoople lite home"><Brand/></button>
     <div className="sidebar-main">
-      <div className="workspace-card"><span className="workspace-letter">h</span><span><small>{t('nav.workspace')}</small><b>{t('nav.workspaceName')}</b></span><ChevronDown size={16}/></div>
+      <button className="workspace-card" onClick={onWorkspace} title={locale==='id'?'Kelola workspace':'Manage workspace'}><span className="workspace-letter">h</span><span><small>{t('nav.workspace')}</small><b>{workspaceName||t('nav.workspaceName')}</b></span><ChevronDown size={16}/></button>
       <span className="side-label">{t('nav.createSpace')}</span>
       <nav aria-label={locale==='en'?'Creative menu':'Menu kreasi'}>{menu.map(m=><button key={m.id} className={screen===m.id?'active':''} aria-current={screen===m.id?'page':undefined} onClick={()=>onGo(m.id)}><m.Icon size={19}/>{m.id==='wizard'?'AI Event Wizard':t('nav.'+m.key)}{screen===m.id&&<i/>}</button>)}</nav>
       <button className="sidebar-new" onClick={()=>onNew()}><Plus size={18}/>{t('nav.newExperience')}</button>
@@ -51,10 +52,11 @@ function TemplateCard({template,onClick}){
   const {t}=useLocale(),Visual=experienceIcons[template.id]||Ticket;
   return <button className="template-card" onClick={onClick}><div className="template-cover" style={{background:template.gradient}}><span className="type-mark"><Visual size={58} strokeWidth={1.45}/></span></div><div className="template-info"><small>{t('templates.'+template.id+'.tag')}</small><h3>{template.name}</h3><p>{t('templates.'+template.id+'.desc')}</p><b>{t('common.create')} <ArrowUpRight size={17}/></b></div></button>;
 }
-function Dashboard({screen,experiences,onNew,onOpen,onGo,onAi}){
+function Dashboard({screen,experiences,onNew,onOpen,onGo,onAi,onWorkspaceInfo}){
   const {t}=useLocale(),projects=screen==='projects'?experiences:experiences.slice(0,3);
   const samplePlayers=experiences.reduce((s,e)=>s+(e.participants||0),0);
   return <div className="content"><div className="content-top"><span className="eyebrow">{t('dashboard.eyebrow')}</span><div><LanguageSwitch/><span className="free-plan">{t('common.free')}</span><span className="account-dot">D</span></div></div>
+    <WorkspacePanel experiences={experiences} onWorkspaceInfo={onWorkspaceInfo}/>
     {screen!=='projects'&&<section className="hero"><div className="hero-text"><span className="hero-chip">{t('dashboard.heroBadge')}</span><h1>{t('dashboard.hero1')}<br/><em>{t('dashboard.hero2')}</em></h1><p>{t('dashboard.heroDesc')}</p><div className="hero-buttons"><button className="button-dark" onClick={onAi}><MessageCircle size={18}/>AI Event Wizard</button><button className="hero-link" onClick={()=>onNew()}>{t('dashboard.create')} <ArrowRight size={17}/></button></div></div><div className="dashboard-ticket-art" aria-hidden="true"><span>PLAY / MORE</span><strong>YOUR<br/>EVENT</strong><div>01 <i/> 02 <i/> 03</div><small>HOOPLE LITE PASS</small></div></section>}
     <div className="section-title"><div><span className="eyebrow">{t('dashboard.bigPicture')}</span><h2>{t('dashboard.overviewTitle')}</h2></div><small>{t('dashboard.sampleNote')}</small></div>
     <div className="stats"><div className="stat stat-purple"><span className="stat-icon"><Layers3 size={20}/></span><small>{t('dashboard.total')}</small><strong>{String(experiences.length).padStart(2,'0')}</strong><p>{t('dashboard.ready')}</p></div><div className="stat stat-pink"><span className="stat-icon"><Users size={20}/></span><small>{t('dashboard.sampleParticipants')}</small><strong>{samplePlayers.toLocaleString('id-ID')}</strong><p>{t('dashboard.sample')}</p></div><div className="stat stat-mint"><span className="stat-icon"><Activity size={20}/></span><small>{t('dashboard.publishedCount')}</small><strong>{String(experiences.filter(e=>displayExperienceStatus(e)==='published').length).padStart(2,'0')}</strong><p>{t('dashboard.momentum')}</p></div></div>
@@ -73,7 +75,7 @@ function PublishedModal({experience,onClose,onCopy,copied}){
 }
 function App(){
   const {t,locale}=useLocale();
-  const [experiences,setExperiences]=useState(loadExperiences),[screen,setScreen]=useState(()=>location.hash==='#studio'?'dashboard':'landing'),[selectedId,setSelectedId]=useState(''),[initialType,setInitialType]=useState('passport'),[mobileMenu,setMobileMenu]=useState(false),[publishedId,setPublishedId]=useState(''),[copied,setCopied]=useState(false),[notice,setNotice]=useState(''),[shared,setShared]=useState(sharedExperience),[legalTab,setLegalTab]=useState('');
+  const [experiences,setExperiences]=useState(loadExperiences),[screen,setScreen]=useState(()=>location.hash==='#studio'?'dashboard':'landing'),[selectedId,setSelectedId]=useState(''),[initialType,setInitialType]=useState('passport'),[mobileMenu,setMobileMenu]=useState(false),[publishedId,setPublishedId]=useState(''),[copied,setCopied]=useState(false),[notice,setNotice]=useState(''),[shared,setShared]=useState(sharedExperience),[legalTab,setLegalTab]=useState(''),[workspaceName,setWorkspaceName]=useState('');
   useEffect(()=>{try{localStorage.setItem('questpop-studio-v1',JSON.stringify(experiences))}catch{}},[experiences]);
   useEffect(()=>{const listener=()=>setShared(sharedExperience());window.addEventListener('hashchange',listener);return()=>window.removeEventListener('hashchange',listener)},[]);
   useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),2900);return()=>clearTimeout(timer)},[notice]);
@@ -93,6 +95,6 @@ function App(){
   if(screen==='wizard')return <EventWizard onBack={()=>goStudio()} onCreate={finishWizard}/>;
   if(screen==='onboarding')return <Onboarding initialType={initialType} onDone={finishQuest} onCancel={()=>goStudio()}/>;
   if(screen==='builder'&&chosen)return <><Builder experience={chosen} onUpdate={updateProject} onBack={()=>goStudio()} onPublish={publish} onHelp={()=>goStudio('tutorial')} onLegal={setLegalTab}/>{publishedId&&<PublishedModal experience={experiences.find(e=>e.id===publishedId)||chosen} copied={copied} onCopy={copyLink} onClose={()=>{setPublishedId('');setCopied(false)}}/>}{notice&&<div className="toast"><BadgeCheck size={18}/>{notice}</div>}{legalTab&&<LegalDialog initial={legalTab} onClose={()=>setLegalTab('')}/>}</>;
-  return <div className="app-shell"><Sidebar screen={screen} onGo={goStudio} onLanding={goLanding} onNew={startNew} onLegal={setLegalTab} open={mobileMenu}/><main className="main-shell"><div className="mobile-toolbar"><button onClick={()=>setMobileMenu(m=>!m)} aria-label="Menu"><Menu size={23}/></button><Brand/><div><LanguageSwitch/><button onClick={()=>goStudio('wizard')} aria-label="AI Event Wizard"><MessageCircle size={21}/></button><button onClick={()=>startNew()} aria-label={t('common.create')}><Plus size={22}/></button></div></div>{screen==='analytics'?<Analytics experiences={experiences} onBack={()=>goStudio()}/>:screen==='templates'?<Templates onNew={startNew}/>:screen==='tutorial'?<div className="content"><div className="studio-page-lang"><LanguageSwitch/></div><Tutorial onAi={()=>goStudio('wizard')} onNew={()=>startNew()} onTemplates={()=>goStudio('templates')} onBuilder={()=>experiences.length?openProject(experiences[0].id):startNew()}/></div>:<Dashboard screen={screen} experiences={experiences} onNew={startNew} onAi={()=>goStudio('wizard')} onOpen={openProject} onGo={goStudio}/>}</main>{mobileMenu&&<button className="mobile-mask" onClick={()=>setMobileMenu(false)} aria-label={t('common.close')}/ >}{notice&&<div className="toast"><BadgeCheck size={18}/>{notice}</div>}{legalTab&&<LegalDialog initial={legalTab} onClose={()=>setLegalTab('')}/>}</div>;
+  return <div className="app-shell"><Sidebar screen={screen} onGo={goStudio} onLanding={goLanding} onNew={startNew} onLegal={setLegalTab} onWorkspace={()=>{goStudio();setTimeout(()=>document.getElementById('cloud-workspace')?.scrollIntoView({behavior:'smooth'}),0)}} workspaceName={workspaceName} open={mobileMenu}/><main className="main-shell"><div className="mobile-toolbar"><button onClick={()=>setMobileMenu(m=>!m)} aria-label="Menu"><Menu size={23}/></button><Brand/><div><LanguageSwitch/><button onClick={()=>goStudio('wizard')} aria-label="AI Event Wizard"><MessageCircle size={21}/></button><button onClick={()=>startNew()} aria-label={t('common.create')}><Plus size={22}/></button></div></div>{screen==='analytics'?<Analytics experiences={experiences} onBack={()=>goStudio()}/>:screen==='templates'?<Templates onNew={startNew}/>:screen==='tutorial'?<div className="content"><div className="studio-page-lang"><LanguageSwitch/></div><Tutorial onAi={()=>goStudio('wizard')} onNew={()=>startNew()} onTemplates={()=>goStudio('templates')} onBuilder={()=>experiences.length?openProject(experiences[0].id):startNew()}/></div>:<Dashboard screen={screen} experiences={experiences} onNew={startNew} onAi={()=>goStudio('wizard')} onOpen={openProject} onGo={goStudio} onWorkspaceInfo={setWorkspaceName}/>}</main>{mobileMenu&&<button className="mobile-mask" onClick={()=>setMobileMenu(false)} aria-label={t('common.close')}/ >}{notice&&<div className="toast"><BadgeCheck size={18}/>{notice}</div>}{legalTab&&<LegalDialog initial={legalTab} onClose={()=>setLegalTab('')}/>}</div>;
 }
 createRoot(document.getElementById('root')).render(<LocaleProvider><App/></LocaleProvider>);
