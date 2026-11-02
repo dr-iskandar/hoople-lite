@@ -26,6 +26,8 @@ If multiple modules are involved, ask AI for a short design/implementation outli
 4. When editing the model, preserve `questpop-*` browser keys until a migration and regression plan exists.
 5. For backend integrations, move all trust decisions server-side: answer keys, QR validation, points, ticket status, checkout pricing and scheduled publishing.
 6. Keep product copy honest: prototype interactions are not evidence of production readiness.
+7. Before editing a cloud feature, map `src/WorkspacePanel.jsx` / `src/cloudApi.js` to `apps/api/src/creator-routes.ts`, `organization-routes.ts`, and `creator-engine-routes.ts`. Distinguish **local editor state** from **authenticated cloud copies**. Do not automatically overwrite `questpop-*` storage, change workspace silently or claim a cloud draft is public.
+8. For schema changes, add the **next numbered migration**; never modify the checksum/content of migrations already applied to other environments. Extend `apps/api/ops/grant_runtime.sql` and real PostgreSQL RLS tests when access patterns change.
 
 ## D. Verification before commit
 
@@ -50,6 +52,8 @@ Manual smoke test relevant flows and note evidence:
 - Logo/cover desktop and mobile crop, reward image and short S&K.
 - Schedule WIB/WITA/WIT, pre-launch vs launched demo limitations.
 - AI wizard local draft and imported JSON validation.
+- API-enabled dashboard: signed out / signed in / expired session, organization creation and switch, one-way import twice (idempotent), imported cloud draft list, disconnected API, wrong Origin and tenant access denied. Check the original local drafts are identical before and after import.
+- Creator draft API: brand kits, experience and mission CRUD, optimistic revision conflicts, mission order, view-only role redaction, quiz answer/QR secret separation. Verify with a restricted PostgreSQL role; tests skipped without `API_TEST_DATABASE_URL` do **not** count as PostgreSQL verification.
 - Landing timeline + pricing and legal disclaimers.
 
 For auth, payment, media or biometric changes, add security, idempotency, privacy/consent and abuse cases; a successful build alone is insufficient.

@@ -1,0 +1,36 @@
+.cloud-workspace{margin:0 0 26px;background:#fff;border:1px solid #e6e2ec;border-radius:24px;padding:22px 24px;color:#24202c;box-shadow:0 8px 24px #28183a09}
+button.workspace-card{width:100%;text-align:left;cursor:pointer;font:inherit}
+button.workspace-card:hover{border-color:#b99cdb;background:#f7f1fe}
+.cloud-workspace-title{display:flex;align-items:center;gap:13px}
+.cloud-workspace-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:15px;background:#f1e7ff;color:#712cbe}
+.cloud-workspace-title h2{font-size:19px;line-height:1.25;margin:2px 0 0;letter-spacing:-.5px}
+.cloud-workspace-title small,.cloud-controls small{color:#867c94;font-size:10px;font-weight:800;letter-spacing:1.6px}
+.cloud-mode{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:1px;color:#8b7d9a;background:#f5f1f8;border-radius:999px;padding:8px 12px}
+.cloud-mode.online{background:#eae3f9;color:#593099}
+.cloud-workspace-hint{display:flex;align-items:center;gap:10px;color:#7d728b;font-size:13px;margin:15px 0 0}
+.cloud-connect{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:18px}
+.cloud-connect p,.cloud-import p{color:#756b82;font-size:13px;line-height:1.5;margin:0}
+.cloud-connect button,.cloud-import button{flex-shrink:0}
+.cloud-connected{margin-top:16px}
+.cloud-user{display:flex;justify-content:space-between;gap:16px;align-items:center;border-bottom:1px solid #efebf3;padding-bottom:12px;font-size:13px;font-weight:700}
+.cloud-user button{border:0;background:transparent;color:#665978;display:flex;align-items:center;gap:6px;cursor:pointer}
+.cloud-controls{display:flex;align-items:end;gap:12px;margin-top:16px}
+.cloud-controls label{flex:1;display:grid;gap:7px;min-width:0}
+.cloud-controls select,.cloud-create input{width:100%;min-height:43px;background:#faf9fb;border:1px solid #ded6e7;border-radius:12px;padding:0 13px;color:#24202c;font:inherit;font-size:13px}
+.cloud-outline,.cloud-create button{border:1px solid #c9addf;border-radius:12px;min-height:43px;padding:0 13px;background:white;color:#5f2e93;font:inherit;font-size:12px;font-weight:750;display:flex;align-items:center;gap:7px;cursor:pointer}
+.cloud-create{display:flex;gap:8px;margin-top:12px}
+.cloud-create button{background:#2d2236;color:white;border-color:#2d2236}
+.cloud-import{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid #efebf3;margin-top:17px;padding-top:17px}
+.cloud-import b{font-size:13px;display:block;margin-bottom:4px}
+.cloud-import b span{border-radius:10px;background:#f0e7fb;color:#6d269f;padding:2px 7px;margin-left:4px}
+.cloud-list{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.cloud-list>div{display:flex;align-items:center;gap:7px;min-width:0;font-size:12px;background:#faf9fc;border-radius:9px;padding:10px}
+.cloud-list svg{color:#7825af;flex-shrink:0}
+.cloud-list span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.cloud-list small{color:#82798a;white-space:nowrap;font-size:10px;margin-left:auto}
+.cloud-message,.cloud-error{font-size:12px;line-height:1.5;border-radius:10px;padding:10px 12px;margin:12px 0 0}
+.cloud-message{background:#f0e8f9;color:#512880}
+.cloud-error{background:#fff1f1;color:#a33142}
+.spin{animation:cloudspin 1.25s linear infinite}
+@keyframes cloudspin{to{transform:rotate(360deg)}}
+@media(max-width:720px){.cloud-workspace{padding:18px;border-radius:20px}.cloud-connect,.cloud-import{align-items:stretch;flex-direction:column}.cloud-connect button,.cloud-import button{justify-content:center}.cloud-controls{flex-direction:column;align-items:stretch}.cloud-list{grid-template-columns:1fr}.cloud-list small{margin-left:auto}}

@@ -3,6 +3,7 @@ import cookie from '@fastify/cookie';
 import type { AuthSettings, DbPool, OidcProvider } from './creator-auth.js';
 import { registerCreatorRoutes } from './creator-routes.js';
 import { registerOrganizationRoutes } from './organization-routes.js';
+import { registerCreatorEngineRoutes } from './creator-engine-routes.js';
 
 export interface ReadyDatabase {
   query(sql: string): Promise<unknown>;
@@ -34,5 +35,6 @@ export function buildApp(database?: ReadyDatabase, identity?: {
   const pool = database && 'connect' in database ? database as ReadyDatabase & DbPool : undefined;
   registerCreatorRoutes(app,pool,identity?.settings,identity?.provider);
   registerOrganizationRoutes(app,pool,identity?.settings);
+  registerCreatorEngineRoutes(app,pool,identity?.settings);
   return app;
 }

@@ -8,5 +8,4 @@ GRANT SELECT, INSERT ON memberships TO hoople_api;
 GRANT SELECT, INSERT ON audit_logs TO hoople_api;
 GRANT SELECT, INSERT, DELETE ON creator_sessions TO hoople_api;
 GRANT SELECT, INSERT, UPDATE ON creator_preferences TO hoople_api;
--- Draft schemas are not exposed via routes yet. Read-only runtime grants for now.
-GRANT SELECT ON brand_kits, experiences, missions TO hoople_api;
+GRANT SELECT, INSERT, UPDATE, DELETE ON brand_kits, experiences, missions TO hoople_api;
