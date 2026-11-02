@@ -1,10 +1,10 @@
 # Hoople lite — Experience Backend Architecture Blueprint
 
-Status: **DESIGN / P0 FOUNDATION PARTIALLY IMPLEMENTED** · 2 November 2026 · React v0.9 / API v0.1
+Status: **DESIGN / P0 AND STAGE 1 AUTH-SCHEMA IN DEVELOPMENT** · 2 November 2026 · React v0.9 / API v0.1
 
 Target: multi-tenant SaaS for Indonesian EO, agencies, brands, companies and communities. The current React Sites demo uses local browser state and is **not** a secure production runtime.
 
-P0 code is now available at `apps/api`: Fastify/TypeScript liveness/readiness, PostgreSQL migration for `users`, `organizations`, `memberships`, and `audit_logs` with forced RLS, plus transaction-scoped org context. No authentication, CRUD/event API, real DB provisioning, or frontend integration exists yet.
+Code in `apps/api` now includes Fastify liveness/readiness, OIDC creator login and cookie sessions, organization/workspace routes, PostgreSQL identity, `brand_kits`, `experiences` and `missions` schemas with forced RLS. Real OIDC provider/database staging, event CRUD, frontend integration and real participant runtime do not exist yet.
 
 ## 1. Proposed technology
 

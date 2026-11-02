@@ -1,11 +1,19 @@
 import Fastify from 'fastify';
+import cookie from '@fastify/cookie';
+import type { AuthSettings, DbPool, OidcProvider } from './creator-auth.js';
+import { registerCreatorRoutes } from './creator-routes.js';
+import { registerOrganizationRoutes } from './organization-routes.js';
 
 export interface ReadyDatabase {
   query(sql: string): Promise<unknown>;
 }
 
-export function buildApp(database?: ReadyDatabase) {
+export function buildApp(database?: ReadyDatabase, identity?: {
+  settings?: AuthSettings;
+  provider?: OidcProvider;
+}) {
   const app = Fastify({ logger: false, bodyLimit: 512 * 1024, requestTimeout: 15_000 });
+  void app.register(cookie);
 
   app.get('/health/live', async () => ({
     service: 'hoople-lite-api',
@@ -23,6 +31,8 @@ export function buildApp(database?: ReadyDatabase) {
     }
   });
 
-  // No protected CRUD until login, RBAC, and tenant membership checks exist.
+  const pool = database && 'connect' in database ? database as ReadyDatabase & DbPool : undefined;
+  registerCreatorRoutes(app,pool,identity?.settings,identity?.provider);
+  registerOrganizationRoutes(app,pool,identity?.settings);
   return app;
 }

@@ -1,10 +1,8 @@
-# Hoople lite API — P0 Foundation (not yet integrated)
+# Hoople lite API — Stage 1 identity and schema (pre-production)
 
-**Scope:** TypeScript + Fastify 5 + PostgreSQL 16+ foundation. This API is **not production-ready** and the React frontend is still localStorage-powered. Do not enable real accounts/events, QR rewards, billing or participant data yet.
+Fastify 5 + TypeScript + PostgreSQL 16+. The React studio is **still localStorage-based**; the routes here are not connected to it. No production OIDC provider, database, staging domain, media pipeline or event runtime has been provisioned.
 
-## Run locally
-
-From `apps/api`:
+## Start and check
 
 ```bash
 npm ci
@@ -13,40 +11,50 @@ npm run build
 npm run dev
 ```
 
-The default bind address is `127.0.0.1:4000` (localhost only). Check:
+Default binding: `127.0.0.1:4000`. `GET /health/live` returns 200; `GET /health/ready` returns 503 without a working DB.
 
-```bash
-curl http://127.0.0.1:4000/health/live
-curl -i http://127.0.0.1:4000/health/ready
-```
+The Node process **does not automatically read .env**. For Node >=20.6, create local `.env` from `.env.example` and start explicitly with `node --env-file=.env --import tsx src/server.ts`; or supply environment variables from the deployment secret manager. Never commit a real `.env`.
 
-Liveness returns HTTP 200 when the process runs. Readiness returns HTTP 503 until a reachable PostgreSQL database is configured. **No user/event APIs are exposed.**
+## PostgreSQL bootstrap
 
-## PostgreSQL setup
+1. Provision PostgreSQL 16+, schema/migration owner with DDL rights and separate login role named `hoople_api` (no SUPERUSER, BYPASSRLS or table ownership). Use managed, rotated credentials; never commit them.
+2. Provide the **migration owner's** `DATABASE_URL` and run `npm run db:migrate` to apply immutable `0001` and `0002`. Do not edit an already-applied migration.
+3. Run `ops/grant_runtime.sql` as the migration owner. Configure the **runtime** `DATABASE_URL` using `hoople_api` and test readiness.
+4. Verify the restricted role's tenant behavior using `API_TEST_DATABASE_URL` and `npm test`. GitHub Actions provisions a disposable PostgreSQL container and executes the same tests. The CI provisioning helper refuses remote/non-CI databases.
+5. Configure OIDC on your chosen provider (issuer, client ID/secret, exact redirect URI), `WEB_ORIGIN` and a random 32-byte base64 `SESSION_ENCRYPTION_KEY`. Run under HTTPS with Secure cookies. `COOKIE_SECURE=false` is only available for localhost development.
 
-1. Create PostgreSQL 16+ database and a dedicated, unprivileged runtime role (`hoople_app`). Use a separate role for running migrations. Do not use a superuser or `BYPASSRLS` role for runtime.
-2. Set `DATABASE_URL` locally via an environment variable. `.env.example` is a template, and the server does not read `.env` automatically.
-3. With a migration-role connection string, run `npm run db:migrate`.
-4. Explicitly `GRANT` only required schema/table privileges to the app role. **Never grant unrestricted access to `schema_migrations` or bypass row security.**
-5. Runtime queries will eventually use `withTenant(pool, orgId, fn)` after identity and organization-role authorization. `withTenant` sets `app.current_org_id` only inside a transaction.
+The model uses PostgreSQL FORCE RLS for creator-visible tables. OIDC subject and temporary session hash contexts are only set server-side after a validated authorization-code grant; clients cannot select tenant context by submitting a header. Runtime grants are intentionally limited to schema operations currently used by the API.
 
-The initial migration creates users, organizations, memberships, and append-only audit logs with PostgreSQL RLS + FORCE RLS. No seed accounts or demo master tokens are shipped. Identity-provider integration and organization creation require an authorized bootstrap flow that is not implemented yet.
+## Auth endpoints
 
-## API endpoints implemented
-
-| Route | Response | Meaning |
+| Method | Path | Description |
 | --- | --- | --- |
-| `GET /health/live` | 200 | Process is alive |
-| `GET /health/ready` | 200 or 503 | Database probe passes or fails |
+| GET | `/v1/auth/start` | Redirects to OIDC login, stores encrypted short-lived PKCE/state/nonce in HttpOnly cookie |
+| GET | `/v1/auth/callback` | Verifies state, nonce and authorization code; creates app session and redirects to configured `WEB_ORIGIN` |
+| POST | `/v1/auth/session` | Alternative code/state exchange for frontend callback; exact Origin required |
+| GET | `/v1/auth/session` | Returns current authenticated creator, or 401 |
+| DELETE | `/v1/auth/session` | Revokes opaque 12-hour session and clears cookie |
 
-Everything else, including `/v1/auth`, `/v1/orgs`, `/v1/experiences`, public player routes, payments and webhooks, remains unimplemented. Do not expose tenant selection by arbitrary client header.
+All creator writes require an exact `Origin: WEB_ORIGIN` request header. Browser CORS credentials are allowed for that one origin only. Session cookies are HttpOnly, SameSite=Lax, Secure (production), path=/ and host-only. Server stores only a SHA-256 digest of the opaque session token. Neither password grant nor unsigned user JWT is accepted.
 
-## Verification gaps before real usage
+## Organization endpoints
 
-- PostgreSQL integration test with separate privileged migration and restricted runtime DB roles.
-- Identity/OIDC validation, session management, membership authorization and RBAC.
-- Cross-tenant denial tests under real RLS; restore/backup and migration rollback plans.
-- Rate limiting, API CORS allowlist, observability and deployment security headers.
-- Public projection redaction, verified missions, server-controlled points and publishing gate.
+| Method | Path | Access |
+| --- | --- | --- |
+| GET | `/v1/orgs` | Own workspaces and active selection |
+| POST | `/v1/orgs` | Authenticated creator creates organization and becomes owner |
+| GET | `/v1/orgs/:oid` | Member |
+| PATCH | `/v1/orgs/:oid` | Owner/admin |
+| DELETE | `/v1/orgs/:oid` | Owner; **soft-archive only**, retains audit history |
+| PUT | `/v1/workspaces/active` | Member selects their active workspace |
 
-Architecture decisions and module priorities: [`../../docs/BACKEND_ARCHITECTURE.md`](../../docs/BACKEND_ARCHITECTURE.md).
+Workspace mutation privileges are checked against membership in the same DB transaction. An unknown/foreign workspace cannot be selected by arbitrary org UUID. The 0002 migration adds session/preferences, `brand_kits`, `experiences`, `missions`, and more restrictive per-user RLS policies. `missions.private_validation` must never be serialized to a public client.
+
+## Still pending
+
+- Connect React studio via API (including migration/import of old `questpop-*` drafts).
+- Real IdP interactive login test, session rotation/cleanup, abuse/rate limiting, HTTPS deployment, origin/cookie integration.
+- Experience/mission/brand-kit CRUD endpoints, optimistic revisions, immutable versions, launch access gate, public projection redaction.
+- Media moderation, verified QR/quiz/rewards, participant engine, billing, privacy retention/consent, monitoring/backups and legal review.
+
+No feature here is ready for live attendees, real payouts or paid events without separate security/operations approval.

@@ -41,10 +41,14 @@ test('DB errors do not leak connection details', async () => {
   } finally { await app.close(); }
 });
 
-test('unfinished protected routes are not exposed', async () => {
+test('organization writes fail closed when authentication is not configured', async () => {
   const app = buildApp();
   try {
     const response = await app.inject({ method: 'POST', url: '/v1/orgs', payload: { name: 'Fake org' } });
-    assert.equal(response.statusCode, 404);
+    assert.equal(response.statusCode, 403);
+    const start = await app.inject({ method:'GET', url:'/v1/auth/start' });
+    assert.equal(start.statusCode,503);
+    const session = await app.inject({ method:'GET', url:'/v1/auth/session' });
+    assert.equal(session.statusCode,503);
   } finally { await app.close(); }
 });
