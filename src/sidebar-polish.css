@@ -1,0 +1,45 @@
+/* QuestPop sidebar v0.7 — compact help, resilient short-height layout. */
+.sidebar{height:100dvh;min-height:0;overflow:hidden;padding-bottom:0}
+.sidebar-logo{flex-shrink:0}
+.sidebar-main{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;padding:0 1px 14px;scrollbar-width:thin;scrollbar-color:#d0d7c9 transparent;overscroll-behavior:contain}
+.sidebar-main>.workspace-card{flex-shrink:0;margin-top:35px}
+.sidebar-main>.side-label{flex-shrink:0}
+.sidebar-main>nav{flex-shrink:0}
+.sidebar-main>.sidebar-new{flex-shrink:0;margin-top:17px}
+.sidebar-main>.sidebar-flex{flex:1 0 17px;min-height:17px}
+.sidebar-support{display:grid;gap:7px;flex-shrink:0}
+.sidebar-support-heading{margin:0 8px 2px;color:#9daca0;font-size:9px;letter-spacing:.14em;font-weight:900}
+.sidebar-guide,.sidebar-demo-info{font:inherit;width:100%;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer}
+.sidebar-guide{min-height:82px;padding:12px 11px;border-radius:13px;border:1px solid #cddbc7;background:#e8efe1;color:#2e5539;transition:background .2s,border-color .2s}
+.sidebar-guide:hover{background:#dfead6;border-color:#a8c09e}
+.sidebar-guide-icon{flex:0 0 38px;height:38px;border-radius:11px;background:#d3e3c9;display:grid;place-items:center;color:#366447}
+.sidebar-guide-copy{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.sidebar-guide-copy small{font-size:9px;font-weight:950;letter-spacing:.13em;color:#71916f}
+.sidebar-guide-copy b{font-size:12px;font-weight:900;line-height:1.2;color:#294d37}
+.sidebar-guide-copy em{font-style:normal;font-size:10px;line-height:1.3;color:#738572}
+.sidebar-guide>svg{flex-shrink:0;align-self:flex-start;color:#6d956e}
+.sidebar-demo-info{min-height:40px;padding:10px 11px;border:1px solid transparent;border-radius:10px;background:transparent;color:#677d6b;font-size:11px;font-weight:800}
+.sidebar-demo-info:hover{background:#f0f2ea;border-color:#dbe3d5;color:#335d40}
+.sidebar-demo-info>span{flex:1}.sidebar-demo-info>svg:last-child{opacity:.7}
+.sidebar-profile{flex-shrink:0;min-height:72px;margin-top:0;padding:14px 5px 16px;border-color:#e6eae1;background:#fcfbf6}
+.sidebar button:focus-visible{outline:2px solid #43855b;outline-offset:2px}
+@media(min-width:761px) and (max-width:1010px){
+  .sidebar-support{display:none}
+  .sidebar-main{overflow-y:auto}
+  .sidebar-main>.workspace-card{display:none}
+  .sidebar-main>.sidebar-flex{flex:1 0 12px}
+  .sidebar-profile{min-height:63px;padding:12px 0}
+}
+@media(max-width:760px){
+  .sidebar{height:100dvh;min-height:0;padding:24px 17px 0}
+  .sidebar-main{overflow-y:auto;padding-bottom:14px}
+  .sidebar-main>.workspace-card{margin-top:30px}
+  .sidebar-support{display:grid}
+  .sidebar-profile{min-height:72px}
+}
+@media(max-height:700px){
+  .sidebar-main>.workspace-card{margin-top:22px;margin-bottom:18px}
+  .sidebar-main>.sidebar-new{margin-top:12px}
+  .sidebar-main>.sidebar-flex{flex:0 0 13px;min-height:13px}
+  .sidebar-guide{min-height:72px;padding:10px}
+}

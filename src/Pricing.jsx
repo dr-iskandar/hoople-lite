@@ -1,0 +1,21 @@
+import React,{useState} from 'react';
+import {ArrowRight,Check,ShieldCheck,X} from 'lucide-react';
+import {useLocale} from './i18n';
+import './pricing.css';
+
+const plans=[
+ {id:'free',price:'0',limit:1,players:25,projects:1,color:'stone',features:{id:['1 draf experience','Preview & tutorial','Branding dasar'],en:['1 experience draft','Preview & tutorial','Basic branding']}},
+ {id:'starter',price:'29.900',limit:1,players:100,projects:1,color:'sage',features:{id:['1 event aktif','Passport, hunt, quiz','Logo dan cover brand'],en:['1 active event','Passport, hunt, quiz','Branded logo and cover']}},
+ {id:'creator',price:'69.900',limit:3,players:500,projects:3,color:'coral',features:{id:['3 event aktif','Brand kit reusable','Template & impor AI JSON'],en:['3 active events','Reusable brand kits','AI JSON templates & import']}},
+ {id:'studio',price:'99.900',limit:10,players:2000,projects:10,color:'blue',features:{id:['10 event aktif','Branding multiklien','Prioritas fitur agency'],en:['10 active events','Multi-client branding','Agency feature priority']}}
+];
+const copy={id:{badge:'PRICING / EARLY ACCESS',title:'Mulai kecil. Main besar.',desc:'Harga psikologis yang ramah untuk kreator, EO, komunitas, dan brand kecil. Pilih sesuai skala aktivasi.',period:'/bulan',names:{free:'Gratis',starter:'Starter',creator:'Creator',studio:'Studio'},recommended:'Paling fleksibel',players:'peserta/bulan',details:'Detail paket',notLive:'Konsep harga pra-rilis. Belum ada checkout atau penagihan.',modalTitle:'Paket belum dijual',modalText:'Kami sedang menyelesaikan payment gateway, kuota peserta, akun, dan alur refund. Ini adalah simulasi paket untuk validasi pricing. Tidak ada pembayaran yang dilakukan.',close:'Mengerti',note:'Kuota, PPN, biaya gateway, dan aturan overage akan dipastikan sebelum checkout produksi.'},en:{badge:'PRICING / EARLY ACCESS',title:'Start small. Play big.',desc:'Accessible pricing for creators, event teams, communities, and emerging brands.',period:'/month',names:{free:'Free',starter:'Starter',creator:'Creator',studio:'Studio'},recommended:'Most flexible',players:'participants/month',details:'Plan details',notLive:'Pre-launch pricing concepts. No live checkout or billing.',modalTitle:'Checkout is not available yet',modalText:'We are finalizing payment gateway integration, participant quotas, accounts, and refunds. This is a pricing preview for validation; no payment is made.',close:'Got it',note:'Quotas, VAT, gateway fees, and overage rules will be finalized before live checkout.'}};
+export default function Pricing(){
+ const {locale}=useLocale(),lang=locale==='en'?'en':'id',t=copy[lang],[selected,setSelected]=useState(null);
+ return <section className="pricing-section" id="harga"><div className="pricing-head"><span className="market-kicker">{t.badge}</span><h2>{t.title}</h2><p>{t.desc}</p></div><div className="pricing-grid">{plans.map(p=><article key={p.id} className={'pricing-card '+p.color+(p.id==='creator'?' highlighted':'')}>
+  {p.id==='creator'&&<span className="pricing-bestseller">{t.recommended}</span>}
+  <div className="pricing-card-top"><span>{p.id.toUpperCase()}</span><h3>{t.names[p.id]}</h3><div className="pricing-amount"><small>Rp</small><strong>{p.price}</strong><small>{t.period}</small></div></div>
+  <div className="pricing-card-count"><b>{p.players.toLocaleString('id-ID')}</b> {t.players}</div><ul>{p.features[lang].map(f=><li key={f}><Check size={15}/>{f}</li>)}</ul><button onClick={()=>setSelected(p)}>{t.details} <ArrowRight size={16}/></button></article>)}</div><p className="pricing-note"><ShieldCheck size={16}/>{t.notLive} {t.note}</p>
+  {selected&&<div className="pricing-modal-shade" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}><div className="pricing-modal" role="dialog" aria-modal="true"><button aria-label="Close" className="pricing-close" onClick={()=>setSelected(null)}><X size={20}/></button><span className="eyebrow">{selected.id.toUpperCase()} / EARLY ACCESS</span><h3>{t.modalTitle}</h3><p>{t.modalText}</p><div><b>{t.names[selected.id]}</b><strong>Rp{selected.price}{t.period}</strong></div><button className="button-dark" onClick={()=>setSelected(null)}>{t.close}</button></div></div>}
+ </section>;
+}

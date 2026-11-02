@@ -1,0 +1,54 @@
+/* Reward media, short prize terms and launch scheduling — QuestPop v0.6 */
+.reward-image-preview{width:100%;aspect-ratio:4/3;border-radius:15px;border:1px dashed #b7c8ad;background:#edf1e4;overflow:hidden;display:grid;place-items:center;color:#668268}
+.reward-image-preview.has-image{border:1px solid #dce3d4;background:#f6f7f1}
+.reward-image-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.reward-image-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;text-align:center;padding:20px}
+.reward-image-empty strong{font-size:11px;font-weight:900;color:#627b63;letter-spacing:.04em}
+.reward-image-empty small{font-size:9px;letter-spacing:.11em;color:#93a48d;font-weight:800}
+.reward-image-actions{display:flex;gap:7px;flex-wrap:wrap}
+.reward-image-actions button{border-radius:10px;border:1px solid #d6dfd2;min-height:39px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 11px;font-size:11px;font-weight:900}
+.reward-upload{background:#315b40;color:#fff;flex:1}.reward-upload:disabled{opacity:.5}
+.reward-image-clear{background:#f9f3eb;color:#975847}
+.reward-editor .form-field>span:has(svg){display:flex;align-items:center;gap:5px}
+.reward-editor .form-field textarea{resize:vertical;line-height:1.5}
+.reward-upload-note{margin:0;display:flex;gap:8px;align-items:flex-start;background:#f1f3e9;border-radius:11px;padding:11px;color:#718070;font-size:10px;line-height:1.6}
+.reward-upload-note svg{flex-shrink:0;margin-top:1px}
+.reward-upload-error{margin:0;color:#a54d3b;font-size:11px;font-weight:800}
+.reward-teaser .reward-teaser-image{width:44px;height:44px;flex-shrink:0;overflow:hidden;border-radius:10px;background:var(--player-soft);display:grid;place-items:center;padding:0!important}
+.reward-teaser .reward-teaser-image img{width:100%;height:100%;object-fit:cover}
+.reward-art.with-reward-image{height:190px;overflow:hidden;background:#eff1e8;display:block;padding:0;position:relative}
+.reward-art.with-reward-image>img{display:block;width:100%;height:100%;object-fit:cover}
+.reward-art.with-reward-image>span{position:absolute;bottom:9px;left:10px;background:#f9f8f2e8;color:#314031;padding:6px 8px;border-radius:5px;font-size:9px}
+.reward-footnote{background:#f0f2e8;border-left:3px solid var(--player-accent);padding:11px 13px;margin:18px 0 5px;border-radius:0 10px 10px 0}
+.reward-footnote strong{display:block;font-size:9px;font-weight:1000;letter-spacing:.12em;margin-bottom:5px;color:#5e715f}
+.player-rewards .reward-footnote p{font-size:10px;line-height:1.6;opacity:.79;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.schedule-options{display:grid;gap:8px}
+.schedule-option{width:100%;padding:12px;display:flex;gap:10px;align-items:center;border:1.5px solid #e4e8db;background:#fff;border-radius:12px;text-align:left;color:#354333}
+.schedule-option.chosen{border-color:#689476;background:#f2f6ec}
+.schedule-option-icon{flex:0 0 36px;height:36px;border-radius:10px;background:#e9eee3;color:#4a7253;display:grid;place-items:center}
+.schedule-option>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:4px}
+.schedule-option strong{font-size:11px;font-weight:900}
+.schedule-option small{font-size:10px;line-height:1.45;color:#859182}
+.schedule-radio{width:17px;height:17px;border:1.6px solid #b8c5b6;border-radius:50%;flex-shrink:0}
+.schedule-option.chosen .schedule-radio{border:5px solid #4d8059;background:white}
+.schedule-detail{display:grid;gap:11px;border:1px solid #e6e9de;background:#fafbf6;padding:12px;border-radius:12px}
+.schedule-detail .form-field{margin:0}.schedule-detail input,.schedule-detail select{background:white;width:100%;min-width:0}
+.schedule-time-hint,.schedule-demo-note{display:flex;align-items:flex-start;gap:7px;color:#72816f;font-size:10px;line-height:1.5;margin:0}
+.schedule-time-hint svg,.schedule-demo-note svg{flex-shrink:0;margin-top:1px}
+.schedule-summary{display:flex;align-items:center;gap:10px;background:#dfeadd;border-radius:10px;padding:12px;color:#365d40}
+.schedule-summary>span{display:grid;gap:5px}.schedule-summary small{font-size:9px;opacity:.8}.schedule-summary b{font-size:11px;line-height:1.4}
+.schedule-invalid{color:#ad593c;font-size:10px;font-weight:800;margin:0;background:#fceddf;padding:9px 11px;border-radius:8px}
+.schedule-demo-note{padding:12px;background:#f1f2e9;border-radius:10px}
+.player-scheduled{background:var(--player-bg);color:var(--player-ink)}
+.scheduled-waiting-content{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px 23px 36px}
+.scheduled-icon{width:100%;max-width:250px;height:136px;border:1.5px solid var(--player-accent);background:var(--player-soft);color:var(--player-accent);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:19px;margin-bottom:28px;transform:rotate(-2deg)}
+.scheduled-icon>span{font-size:10px;letter-spacing:.15em;font-weight:900}
+.player-scheduled h2{font-size:clamp(25px,6vw,34px);max-width:330px;margin:12px 0 10px}
+.player-scheduled p{max-width:310px;margin:0 0 13px}
+.scheduled-date{border-bottom:1px dashed var(--player-accent);padding:0 4px 12px;font-size:12px;font-weight:900;line-height:1.5;max-width:310px}
+.scheduled-countdown{display:flex;gap:8px;width:100%;max-width:290px;margin:22px 0 20px}
+.scheduled-countdown>div{background:#fff;border:1px solid #e0e6db;border-radius:12px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px 5px;gap:5px}
+.scheduled-countdown b{font-size:25px;letter-spacing:-.04em;font-family:'Space Grotesk',sans-serif}
+.scheduled-countdown small{font-size:9px;color:#859483}
+.scheduled-note{font-size:10px;color:#778674;max-width:250px;line-height:1.5}
+@media(max-width:600px){.reward-image-actions{flex-direction:column}.reward-image-actions button{width:100%}.scheduled-icon{height:120px;margin-bottom:23px}.scheduled-countdown{margin-top:17px}}
