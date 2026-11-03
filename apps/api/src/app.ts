@@ -19,7 +19,7 @@ export function buildApp(database?: ReadyDatabase, identity?: {
   // embedded, MIME-sniffed or reveal referrers. TLS termination and network
   // rate limiting are still the responsibility of the deployment proxy.
   app.addHook('onSend', async (_request, reply, payload) => {
-    reply.header('Cache-Control', 'no-store, max-age=0');
+    reply.header('Cache-Control', 'no-store');
     reply.header('Pragma', 'no-cache');
     reply.header('X-Content-Type-Options', 'nosniff');
     reply.header('X-Frame-Options', 'DENY');

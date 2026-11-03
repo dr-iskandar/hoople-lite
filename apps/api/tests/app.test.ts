@@ -58,7 +58,7 @@ test('API responses carry privacy and framing protections', async () => {
   try {
     for (const url of ['/health/live', '/v1/auth/session']) {
       const response = await app.inject({method:'GET',url});
-      assert.equal(response.headers['cache-control'],'no-store, max-age=0');
+      assert.equal(response.headers['cache-control'],'no-store');
       assert.equal(response.headers['x-content-type-options'],'nosniff');
       assert.equal(response.headers['x-frame-options'],'DENY');
       assert.equal(response.headers['referrer-policy'],'no-referrer');
