@@ -321,7 +321,7 @@ export function registerCreatorEngineRoutes(app:FastifyInstance,pool?:DbPool,aut
       'SELECT id,revision,lifecycle_status,experience_type,brand_kit_id FROM experiences WHERE organization_id=$1 AND id=$2 FOR UPDATE',[oid,eid]);
     const exp=current.rows[0];
     if(!exp||exp.lifecycle_status!=='draft'||exp.experience_type!==draft.type)return bad(409,'NOT_FOUND_OR_NOT_DRAFT');
-    if(exp.revision!==body.expectedRevision)return bad(409,'REVISION_CONFLICT');
+    if(exp.revision!==body?.expectedRevision)return bad(409,'REVISION_CONFLICT');
     let brandKitId=exp.brand_kit_id;
     if(brandConfig){
       const accent=brandConfig.accent;
