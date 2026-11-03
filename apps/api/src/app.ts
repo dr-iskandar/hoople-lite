@@ -15,6 +15,22 @@ export function buildApp(database?: ReadyDatabase, identity?: {
 }) {
   const app = Fastify({ logger: false, bodyLimit: 512 * 1024, requestTimeout: 15_000 });
   void app.register(cookie);
+  // JSON API responses (including errors and redirects) must not be cached,
+  // embedded, MIME-sniffed or reveal referrers. TLS termination and network
+  // rate limiting are still the responsibility of the deployment proxy.
+  app.addHook('onSend', async (_request, reply, payload) => {
+    reply.header('Cache-Control', 'no-store, max-age=0');
+    reply.header('Pragma', 'no-cache');
+    reply.header('X-Content-Type-Options', 'nosniff');
+    reply.header('X-Frame-Options', 'DENY');
+    reply.header('Referrer-Policy', 'no-referrer');
+    reply.header('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+    reply.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    if (process.env.NODE_ENV === 'production') {
+      reply.header('Strict-Transport-Security', 'max-age=31536000');
+    }
+    return payload;
+  });
 
   app.get('/health/live', async () => ({
     service: 'hoople-lite-api',

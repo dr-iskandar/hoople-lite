@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: '15 1 * * 1'
 
 permissions:
   contents: read
@@ -29,7 +31,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
       - name: Install locked dependencies
         run: npm ci
@@ -37,10 +39,14 @@ jobs:
         run: npm test
       - name: Build frontend
         run: npm run build
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=high
       - name: Install API dependencies
         run: npm ci --prefix apps/api
       - name: Typecheck and build backend
         run: npm run api:build
+      - name: Audit API dependencies
+        run: npm audit --prefix apps/api --audit-level=high
       - name: Provision ephemeral PostgreSQL and run migrations
         working-directory: apps/api
         env:

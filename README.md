@@ -15,7 +15,7 @@ Hoople lite is a bilingual (Bahasa Indonesia / English) interactive experience b
 
 ## Run locally
 
-Requirements: Node.js 20+ and npm.
+Requirements: a currently supported Node.js LTS (24.22.1+ or 26.12.1+) and npm. Use `.nvmrc` to select the project default.
 
 ```bash
 npm ci
@@ -86,6 +86,10 @@ The `#play` demo URL contains a client-readable experience payload. Do not use t
 ### Data migration note
 
 Existing prototype browser storage deliberately keeps its historical `questpop-*` keys for compatibility. The dashboard can **copy** experience drafts from `questpop-studio-v1` into an active cloud workspace when API auth is configured. Import is idempotent per `(organization_id, legacy_draft_id)`; a second import skips the existing cloud draft instead of overwriting it. Browser drafts are not deleted or replaced. Images stored as `data:` URLs cannot yet be uploaded; the import omits them and indicates that they will need re-uploading later.
+
+## Security and production readiness
+
+Read [Security hardening checklist](docs/SECURITY_HARDENING.md) and [private vulnerability reporting policy](SECURITY.md) before exposing the API or storing real creator data. The CI checks both dependency trees with `npm audit --audit-level=high` and runs weekly; GitHub Dependabot opens dependency-update PRs. For HTTPS production, configure TLS, managed database encryption/backups, an OIDC provider and ingress rate limiting. **Do not use `#play=` browser demo links for real events or participant data**; they contain client-readable payloads.
 
 ## Handoff
 
