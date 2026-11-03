@@ -12,7 +12,7 @@ export default function Player({experience,preview=false,onExit,onLegal}){
   const {t,locale}=useLocale(),q=(key,vars)=>questT(locale,key,vars),brand=getBrand(experience);
   const displayFont={grotesk:'Space Grotesk, sans-serif',sans:'DM Sans, sans-serif',serif:'Georgia, serif'}[brand.font]||'Space Grotesk, sans-serif';
   const brandLogo=brand.logo||brand.logoUrl,brandCoverMobile=brand.coverMobile||brand.coverMobileUrl||brand.cover||brand.coverUrl,brandCoverDesktop=brand.coverDesktop||brand.coverDesktopUrl||brand.cover||brand.coverUrl||brandCoverMobile;
-  const missions=experience.missions||[],isQuiz=experience.type==='quiz';
+  const missions=experience.missions||[],isQuiz=experience.type==='quiz',publicDemo=experience.demoPublic===true;
   const PreviewIcon=isQuiz?ClipboardCheck:experience.type==='hunt'?Compass:Ticket;
   const rewardImage=experience.reward?.image||experience.reward?.imageUrl;
   const [clock,setClock]=useState(Date.now());
@@ -68,7 +68,7 @@ export default function Player({experience,preview=false,onExit,onLegal}){
   }
   function checkQR(value){
     if(!active)return;
-    if(String(value).trim().toLowerCase()===String(active.code||'').trim().toLowerCase()&&String(value).trim()){
+    if(String(value).trim() && (publicDemo || String(value).trim().toLowerCase()===String(active.code||'').trim().toLowerCase())){
       completeMission(active);
     }else{
       setCameraError(q('qrWrong'));
@@ -89,7 +89,7 @@ export default function Player({experience,preview=false,onExit,onLegal}){
         if(!scanningRef.current)return;
         try{
           const codes=await detector.detect(video);
-          if(codes.length){checkQR(codes[0].rawValue);if(String(codes[0].rawValue).trim().toLowerCase()===String(active.code).trim().toLowerCase())return}
+          if(codes.length){checkQR(codes[0].rawValue);if(publicDemo||String(codes[0].rawValue).trim().toLowerCase()===String(active.code).trim().toLowerCase())return}
         }catch{}
         if(scanningRef.current)scanFrameRef.current=requestAnimationFrame(tick);
       }
@@ -105,7 +105,7 @@ export default function Player({experience,preview=false,onExit,onLegal}){
   }
   function answerQuiz(m,index){
     if(collected.includes(m.id))return;
-    if(index===Number(m.correctIndex??0)){setFeedback('correct');completeMission(m,true)}
+    if(publicDemo || index===Number(m.correctIndex??0)){setFeedback('correct');completeMission(m,true)}
     else setFeedback('wrong');
   }
   const tabLabel=isQuiz?q('questions'):t('player.missions');
@@ -120,10 +120,10 @@ export default function Player({experience,preview=false,onExit,onLegal}){
     </div>;
   }
   return <div className="player" style={{'--player-accent':brand.accent,'--player-bg':brand.bg,'--player-ink':brand.ink,'--player-soft':brand.soft,'--player-font':displayFont}}>
-    <header className="player-top"><span className="player-brand">{brandLogo?<img className="player-brand-logo" src={brandLogo} alt=""/>:<b>h</b>}<span>{brand.name||experience.name}</span></span><span className="player-live">{preview&&isReleaseScheduled(experience)?'PREVIEW · '+(locale==='id'?'TERJADWAL':'SCHEDULED'):'● '+t('player.live')}</span></header>
+    <header className="player-top"><span className="player-brand">{brandLogo?<img className="player-brand-logo" src={brandLogo} alt=""/>:<b>h</b>}<span>{brand.name||experience.name}</span></span><span className="player-live">{publicDemo?(locale==='id'?'DEMO · SIMULASI':'DEMO · SIMULATION'):preview&&isReleaseScheduled(experience)?'PREVIEW · '+(locale==='id'?'TERJADWAL':'SCHEDULED'):'● '+t('player.live')}</span></header>
     {!started?<div className="player-welcome">
       <div className={'player-art '+(brandCoverMobile?'with-brand-cover':'')}>{brandCoverMobile?<><img className="player-cover-image player-cover-mobile" src={brandCoverMobile} alt=""/><img className="player-cover-image player-cover-desktop" src={brandCoverDesktop} alt=""/></>:<><span className="art-blob"/><span className="art-emoji"><PreviewIcon size={95} strokeWidth={1.4}/></span></>}<span className="art-number">{isQuiz?'QUIZ':'PASS'} / 001</span></div>
-      <span className="player-kicker">{brand.tagline||t('player.kicker')}</span><h2>{experience.welcome}</h2><p>{experience.subtitle}</p>
+      <span className="player-kicker">{brand.tagline||t('player.kicker')}</span>{publicDemo&&<p role="status" className="player-note">{locale==='id'?'Simulasi publik: kode QR dan jawaban kuis tidak diverifikasi; poin dan hadiah bukan transaksi asli.':'Public simulation: QR codes and quiz answers are not verified; points and rewards are not real transactions.'}</p>}<h2>{experience.welcome}</h2><p>{experience.subtitle}</p>
       <button className="player-primary" onClick={()=>setStarted(true)}>{experience.buttonText||q(isQuiz?'startQuiz':'startQuest')} <ArrowRight size={17}/></button><small className="player-tiny">{t('player.noDownload')}</small>
     </div>:<><div className="player-inner">
       {tab==='home'&&<div className="player-home"><span className="player-kicker">{t('player.hello')}</span><h2>{isQuiz?q('quizTitle'):t('player.collectTitle')}</h2><p>{isQuiz?q('quizDesc'):q('boardDesc')}</p>
@@ -159,7 +159,7 @@ export default function Player({experience,preview=false,onExit,onLegal}){
         <form className="quest-code-form" onSubmit={event=>{event.preventDefault();checkQR(code)}}><input value={code} onChange={event=>setCode(event.target.value)} placeholder={q('qrSample')} aria-label={q('qrSample')}/><button className="player-primary" type="submit" disabled={!code.trim()}>{q('qrVerify')}</button></form>{cameraError&&<p role="alert" className="quest-error">{cameraError}</p>}</div>}
       {activeKind==='quiz'&&<div className="quest-answers">{(active.options||[]).map((option,index)=><button key={index} className={'quest-answer '+(collected.includes(active.id)&&index===active.correctIndex?'correct':'')} disabled={collected.includes(active.id)} onClick={()=>answerQuiz(active,index)}><span>{optionsLetters[index]}</span><b>{option}</b>{collected.includes(active.id)&&index===active.correctIndex&&<Check size={18}/>}</button>)}
         {feedback==='wrong'&&<div role="alert" className="quest-answer-feedback wrong">{q('quizWrong')}</div>}
-        {collected.includes(active.id)&&<><div className="quest-answer-feedback correct"><CheckCircle2 size={18}/>{q('quizCorrect')} +{Number(active.points||0)} {q('points')}</div><button className="player-primary" onClick={closeMission}>{q('quizContinue')} <ArrowRight size={17}/></button></>}
+        {collected.includes(active.id)&&<><div className="quest-answer-feedback correct"><CheckCircle2 size={18}/>{publicDemo?(locale==='id'?'Simulasi jawaban tersimpan':'Demo answer recorded'):q('quizCorrect')} +{Number(active.points||0)} {q('points')}</div><button className="player-primary" onClick={closeMission}>{q('quizContinue')} <ArrowRight size={17}/></button></>}
       </div>}
     </section></div>}
     {cameraDisclosure&&<div className="camera-consent-shade" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setCameraDisclosure('')}}><section className="camera-consent-dialog" role="dialog" aria-modal="true" aria-label={locale==='id'?'Persetujuan kamera':'Camera consent'}>

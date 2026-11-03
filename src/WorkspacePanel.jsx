@@ -3,9 +3,10 @@ import {ArrowRight,Check,Cloud,CloudOff,LoaderCircle,LogIn,LogOut,Plus,UploadClo
 import {useLocale} from './i18n';
 import {cloudEnabled,cloudRequest,beginCloudLogin,localDraftForImport,draftContainsLocalMedia} from './cloudApi';
 import {slugify} from './data';
+import {cloudDraftToEditor,cloudDraftEndpoint} from './cloudDraft';
 import './workspace-cloud.css';
 
-export default function WorkspacePanel({experiences,onWorkspaceInfo}) {
+export default function WorkspacePanel({experiences,onWorkspaceInfo,onOpenCloud}) {
   const {locale}=useLocale(),id=locale==='id';
   const [creator,setCreator]=useState(null),[orgs,setOrgs]=useState([]);
   const [active,setActive]=useState(null),[items,setItems]=useState([]);
@@ -78,6 +79,19 @@ export default function WorkspacePanel({experiences,onWorkspaceInfo}) {
     }catch{setError(id?'Tidak bisa memuat daftar cloud.':'Could not reload cloud drafts.')}
     setBusy(false);
   }
+  async function openCloud(item) {
+    if(!active||busy||item.status!=='draft')return;
+    setBusy(true);setError('');
+    try {
+      const endpoint=cloudDraftEndpoint(active,item.id);
+      const detail=await cloudRequest(endpoint);
+      const brand=detail.brandKitId?await cloudRequest(`/v1/orgs/${active}/brand-kits/${detail.brandKitId}`):null;
+      onOpenCloud?.(cloudDraftToEditor(detail,active,brand));
+    }catch(error){setError(error.message==='PRIVATE_VALIDATION_UNAVAILABLE'
+      ?(id?'Hak akses untuk data validasi misi tidak tersedia.':'Mission validation data is not available for this role.')
+      :(id?'Draft cloud gagal dibuka. Periksa izin atau koneksi.':'Unable to open cloud draft. Check access or connection.'));}
+    finally{setBusy(false);}
+  }
   async function logout() {
     setBusy(true);setError('');
     try{await cloudRequest('/v1/auth/session',{method:'DELETE'});setCreator(null);setOrgs([]);setActive(null);setItems([]);onWorkspaceInfo?.('');}
@@ -91,7 +105,7 @@ export default function WorkspacePanel({experiences,onWorkspaceInfo}) {
       <div><small>{id?'RUANG KERJA':'WORKSPACE'}</small><h2>{id?'Studio & cloud':'Studio & cloud'}</h2></div>
       <span className={'cloud-mode '+(creator?'online':'')}>{creator?(id?'TERHUBUNG':'CONNECTED'):(id?'DEMO LOKAL':'LOCAL DEMO')}</span>
     </div>
-    {!cloudEnabled?<p className="cloud-workspace-hint">{id?'Draft tetap tersimpan di browser. Hubungkan VITE_API_BASE_URL untuk login dan workspace cloud.':'Drafts remain in this browser. Configure VITE_API_BASE_URL to enable cloud login and workspaces.'}</p>:
+    {!cloudEnabled?<p className="cloud-workspace-hint">{id?'Draft demo tersimpan di browser ini. Jangan masukkan data pribadi atau kode rahasia. Hubungkan VITE_API_BASE_URL untuk login dan workspace cloud.':'Demo drafts remain in this browser. Do not enter personal data or secret codes. Configure VITE_API_BASE_URL to enable cloud login and workspaces.'}</p>:
       loading?<p className="cloud-workspace-hint"><LoaderCircle size={16} className="spin"/>{id?'Memeriksa sesi kreator…':'Checking creator session…'}</p>:
       !creator?<div className="cloud-connect">
         <p>{id?'Masuk untuk mengelola workspace dan menyalin draft lokal ke cloud. Kamu bisa tetap memakai mode demo tanpa akun.':'Sign in to manage workspaces and copy local drafts to the cloud. Demo mode still works without an account.'}</p>
@@ -116,7 +130,7 @@ export default function WorkspacePanel({experiences,onWorkspaceInfo}) {
           <button className="button-dark small" disabled={busy||!experiences.length} onClick={()=>void importLocal()}>{busy?<LoaderCircle size={16} className="spin"/>:<UploadCloud size={16}/>}
             {id?'Impor draft lokal':'Import local drafts'}</button>
         </div>}
-        {!!items.length&&<div className="cloud-list">{items.slice(0,8).map(item=><div key={item.id}><Check size={14}/><span>{item.title}</span><small>{item.missionCount} {id?'misi':'missions'} · cloud draft</small></div>)}</div>}
+        {!!items.length&&<div className="cloud-list">{items.slice(0,8).map(item=><div key={item.id}><Check size={14}/><span>{item.title}</span><small>{item.missionCount} {id?'misi':'missions'} · cloud draft</small>{item.status==='draft'&&['owner','admin','editor'].includes(orgs.find(o=>o.id===active)?.role)&&<button className="cloud-outline" disabled={busy} onClick={()=>void openCloud(item)}>{id?'Edit cloud':'Edit cloud'}</button>}</div>)}</div>}
       </div>}
     {notice&&<p className="cloud-message" role="status">{notice}</p>}
     {error&&<p className="cloud-error" role="alert">{error}</p>}
