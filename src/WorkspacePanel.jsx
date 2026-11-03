@@ -105,7 +105,7 @@ export default function WorkspacePanel({experiences,onWorkspaceInfo,onOpenCloud}
       <div><small>{id?'RUANG KERJA':'WORKSPACE'}</small><h2>{id?'Studio & cloud':'Studio & cloud'}</h2></div>
       <span className={'cloud-mode '+(creator?'online':'')}>{creator?(id?'TERHUBUNG':'CONNECTED'):(id?'DEMO LOKAL':'LOCAL DEMO')}</span>
     </div>
-    {!cloudEnabled?<p className="cloud-workspace-hint">{id?'Draft tetap tersimpan di browser. Hubungkan VITE_API_BASE_URL untuk login dan workspace cloud.':'Drafts remain in this browser. Configure VITE_API_BASE_URL to enable cloud login and workspaces.'}</p>:
+    {!cloudEnabled?<p className="cloud-workspace-hint">{id?'Draft demo tersimpan di browser ini. Jangan masukkan data pribadi atau kode rahasia. Hubungkan VITE_API_BASE_URL untuk login dan workspace cloud.':'Demo drafts remain in this browser. Do not enter personal data or secret codes. Configure VITE_API_BASE_URL to enable cloud login and workspaces.'}</p>:
       loading?<p className="cloud-workspace-hint"><LoaderCircle size={16} className="spin"/>{id?'Memeriksa sesi kreator…':'Checking creator session…'}</p>:
       !creator?<div className="cloud-connect">
         <p>{id?'Masuk untuk mengelola workspace dan menyalin draft lokal ke cloud. Kamu bisa tetap memakai mode demo tanpa akun.':'Sign in to manage workspaces and copy local drafts to the cloud. Demo mode still works without an account.'}</p>

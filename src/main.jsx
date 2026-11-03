@@ -79,6 +79,9 @@ function App(){
   const [experiences,setExperiences]=useState(loadExperiences),[cloudSaving,setCloudSaving]=useState(false),[screen,setScreen]=useState(()=>location.hash==='#studio'?'dashboard':'landing'),[selectedId,setSelectedId]=useState(''),[initialType,setInitialType]=useState('passport'),[mobileMenu,setMobileMenu]=useState(false),[publishedId,setPublishedId]=useState(''),[copied,setCopied]=useState(false),[notice,setNotice]=useState(''),[shared,setShared]=useState(sharedExperience),[legalTab,setLegalTab]=useState(''),[workspaceName,setWorkspaceName]=useState('');
   useEffect(()=>{try{localStorage.setItem('questpop-studio-v1',JSON.stringify(experiences.filter(e=>!e.cloud)))}catch{}},[experiences]);
   useEffect(()=>{const listener=()=>setShared(sharedExperience());window.addEventListener('hashchange',listener);return()=>window.removeEventListener('hashchange',listener)},[]);
+  // Re-encode old #play links using the sanitized public projection. Previously
+  // distributed URLs may already have disclosed secrets and must be rotated.
+  useEffect(()=>{if(!shared?.demoPublic)return;const safe=makeShareUrl(shared);if(!safe)return;const hash=new URL(safe).hash;if(hash!==location.hash)history.replaceState({},'',location.pathname+location.search+hash)},[shared]);
   useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),2900);return()=>clearTimeout(timer)},[notice]);
   const chosen=experiences.find(e=>e.id===selectedId);
   function goStudio(page='dashboard'){history.replaceState({},'','#studio');setScreen(page);setMobileMenu(false);window.scrollTo(0,0)}
