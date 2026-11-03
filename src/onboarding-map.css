@@ -1,0 +1,420 @@
+/* Hoople lite / illustrated quest-map onboarding.
+   Scoped to .map-onboarding so editor, wizard and shared components retain their styles. */
+.map-onboarding{
+  --map-violet:#951bd7;
+  --map-ink:#19151e;
+  --map-muted:#857b96;
+  background:#f8f2ff;
+  color:var(--map-ink);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+.map-onboarding .map-landscape{
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  user-select:none;
+  opacity:.78;
+  max-width:none;
+}
+.map-onboarding .map-landscape-top{
+  width:1000px;
+  height:auto;
+  top:6px;
+  right:-265px;
+}
+.map-onboarding .map-landscape-bottom{
+  width:1200px;
+  height:auto;
+  bottom:140px;
+  left:-45px;
+  opacity:.56;
+}
+.map-onboarding .map-onboard-header{
+  height:108px;
+  min-height:108px;
+  border:0;
+  background:transparent;
+  padding:0 clamp(26px,4.7vw,68px);
+  z-index:2;
+  position:relative;
+}
+.map-onboarding .map-onboard-header .brand-lockup{width:154px}
+.map-onboarding .map-onboard-header .plain-icon{opacity:.7}
+.map-onboarding .map-onboard-header .onboard-right-actions{
+  gap:16px;
+}
+.map-onboarding .map-onboard-body{
+  width:100%;
+  max-width:1120px;
+  margin:0 auto;
+  padding:20px 38px 74px;
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  column-gap:50px;
+  flex:1;
+  position:relative;
+  z-index:1;
+}
+.map-onboarding .map-onboard-sidebar{
+  position:relative;
+  border-right:1px solid #e6dbf1;
+  align-self:stretch;
+  padding-top:10px;
+  min-height:890px;
+}
+.map-onboarding .map-journey{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  width:100%;
+  max-width:145px;
+  min-height:745px;
+}
+.map-onboarding .map-journey-step{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:13px;
+  width:100%;
+  min-height:118px;
+  padding:0 0 0 7px;
+  background:transparent;
+  border:0;
+  text-align:left;
+  position:relative;
+  color:#84768f;
+  opacity:1;
+}
+.map-onboarding .map-journey-step:not(:last-child)::after{
+  content:'';
+  position:absolute;
+  top:111px;
+  left:0;
+  width:53px;
+  height:68px;
+  border-left:3px dashed #ff812e;
+  border-radius:47% 0 0 45%;
+  transform:rotate(-17deg);
+}
+.map-onboarding .map-journey-step::before{
+  content:'';
+  position:absolute;
+  top:101px;
+  left:-9px;
+  width:14px;
+  height:14px;
+  border:3px solid #ff812e;
+  border-radius:50%;
+  background:#fcf7ff;
+  z-index:2;
+}
+.map-onboarding .map-journey-step:disabled{cursor:default}
+.map-onboarding .map-journey-icon{
+  width:70px;
+  height:70px;
+  border:1.5px solid #c4b4d1;
+  color:#756683;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#f7f1fbac;
+  transition:background .18s ease,color .18s ease,transform .18s ease;
+}
+.map-onboarding .map-journey-step.is-current .map-journey-icon,
+.map-onboarding .map-journey-step.is-done .map-journey-icon{
+  background:var(--map-violet);
+  color:#fff;
+  border-color:var(--map-violet);
+}
+.map-onboarding .map-journey-step:not(:disabled):hover .map-journey-icon{transform:translateY(-2px)}
+.map-onboarding .map-journey-caption{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  font:800 14px/1.22 'DM Sans',sans-serif;
+  letter-spacing:-.03em;
+}
+.map-onboarding .map-journey-caption b{font-size:16px}
+.map-onboarding .map-journey-caption strong{font-size:14px;overflow-wrap:anywhere}
+.map-onboarding .map-journey-step.is-current .map-journey-caption,
+.map-onboarding .map-journey-step.is-done .map-journey-caption{color:var(--map-violet)}
+.map-onboarding .map-onboard-main{
+  width:100%;
+  margin:0;
+  min-width:0;
+}
+.map-onboarding .map-progress{
+  margin:10px 0 60px;
+  gap:20px;
+  color:#80728e;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.19em;
+  white-space:nowrap;
+}
+.map-onboarding .map-progress>div{gap:6px}
+.map-onboarding .map-progress>div span{
+  height:16px;
+  background:#e7ddec;
+  border-radius:20px;
+}
+.map-onboarding .map-progress>div span.filled{background:var(--map-violet)}
+.map-onboarding .map-progress>b{
+  color:var(--map-violet);
+  font-size:19px;
+  letter-spacing:0;
+  min-width:52px;
+  text-align:right;
+}
+.map-onboarding .map-onboard-card{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  padding:0;
+  min-height:unset;
+  border-radius:0;
+}
+.map-onboarding .map-intro{min-height:285px}
+.map-onboarding .map-intro h1{
+  font-family:'Space Grotesk','DM Sans',sans-serif;
+  font-size:clamp(43px,5.8vw,75px);
+  font-weight:800;
+  letter-spacing:-.075em;
+  line-height:1.03;
+  margin:0 0 20px;
+  color:var(--map-ink);
+}
+.map-onboarding .map-intro h1 em{
+  color:var(--map-violet);
+  font-style:normal;
+}
+.map-onboarding .map-intro p{
+  color:var(--map-muted);
+  font-size:clamp(16px,2vw,23px);
+  font-weight:500;
+  line-height:1.46;
+  margin:0;
+}
+.map-onboarding .map-section-title{
+  color:var(--map-ink);
+  font-family:'Space Grotesk','DM Sans',sans-serif;
+  font-size:clamp(39px,5.6vw,65px);
+  font-weight:800;
+  line-height:1.1;
+  letter-spacing:-.07em;
+  margin:0 0 34px;
+}
+.map-onboarding .map-choices{
+  display:grid;
+  gap:19px;
+}
+.map-onboarding .map-choice{
+  background:#fffaf2;
+  border:1.5px solid #cfc6b8;
+  border-radius:24px;
+  box-shadow:0 8px 25px #75638206;
+  display:grid;
+  grid-template-columns:36% minmax(0,1fr) 44px;
+  gap:10px;
+  align-items:center;
+  padding:13px 30px 13px 15px;
+  min-height:221px;
+  color:var(--map-ink);
+  text-align:left;
+  transform:rotate(-.8deg);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease;
+}
+.map-onboarding .map-choice:nth-child(2){transform:rotate(.5deg)}
+.map-onboarding .map-choice:nth-child(3){transform:rotate(-.5deg)}
+.map-onboarding .map-choice:hover{transform:rotate(0) translateY(-3px);box-shadow:0 14px 30px #74388b18}
+.map-onboarding .map-choice.active{
+  background:#9a19dc;
+  border-color:#fff;
+  box-shadow:0 2px 0 #fff,0 10px 20px #951bd714;
+  color:#fff;
+}
+.map-onboarding .map-choice-art{
+  width:100%;
+  height:205px;
+  object-fit:contain;
+  justify-self:center;
+  filter:drop-shadow(0 4px 2px #5c476112);
+  transform:scale(1.11);
+  pointer-events:none;
+}
+.map-onboarding .map-choice-text{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-width:0;
+}
+.map-onboarding .map-choice-text strong{
+  font-family:'DM Sans','Space Grotesk',sans-serif;
+  font-size:clamp(21px,2.65vw,29px);
+  font-weight:800;
+  letter-spacing:-.045em;
+  line-height:1.15;
+}
+.map-onboarding .map-choice-text small{
+  font-family:'DM Sans',sans-serif;
+  font-size:clamp(15px,1.85vw,21px);
+  font-weight:500;
+  line-height:1.43;
+  color:#8b8198;
+}
+.map-onboarding .map-choice.active .map-choice-text small{color:#f8e6ff}
+.map-onboarding .map-choice-indicator{
+  width:47px;
+  height:47px;
+  border:2px solid #b9bfb0;
+  border-radius:50%;
+  background:transparent;
+  justify-self:end;
+  color:var(--map-violet);
+}
+.map-onboarding .map-choice.active .map-choice-indicator{
+  background:#fff;
+  border-color:#fff;
+}
+.map-onboarding .map-form-stack,
+.map-onboarding .map-vibe-grid{
+  background:#fffaf4ec;
+  border:1.5px solid #ded4df;
+  border-radius:25px;
+  padding:29px;
+  max-width:710px;
+}
+.map-onboarding .map-form-stack .form-field>span{
+  font-size:12px;
+  letter-spacing:.1em;
+  color:#766485;
+}
+.map-onboarding .map-form-stack .form-field input,
+.map-onboarding .map-form-stack .form-field textarea{
+  font-size:16px;
+  padding:15px;
+}
+.map-onboarding .map-vibe-grid .vibe-option{
+  border-radius:16px;
+}
+.map-onboarding .map-vibe-grid .vibe-option.active{
+  border-color:var(--map-violet);
+  background:#f9efff;
+}
+.map-onboarding .form-error{margin-top:18px;font-size:13px}
+.map-onboarding .map-onboard-footer{
+  position:relative;
+  z-index:2;
+  margin:0 clamp(28px,5vw,65px);
+  padding:27px 0 30px;
+  min-height:159px;
+  border-top:1px solid #ddd1e8;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);
+  gap:30px;
+  align-items:center;
+}
+.map-onboarding .map-back,
+.map-onboarding .map-next{
+  border:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  font-weight:800;
+  font-size:21px;
+  transition:transform .18s ease,background .18s ease;
+}
+.map-onboarding .map-back{
+  color:#776a86;
+  background:transparent;
+  justify-self:start;
+  padding:16px 12px;
+}
+.map-onboarding .map-back:hover{color:var(--map-violet);transform:translateX(-2px)}
+.map-onboarding .map-next{
+  min-height:84px;
+  color:#fff;
+  background:#1b1821;
+  border-radius:21px;
+  width:100%;
+  padding:18px 25px;
+}
+.map-onboarding .map-next:hover{background:#38283f;transform:translateY(-2px)}
+.map-onboarding button:focus-visible{outline:3px solid #ff8a37!important;outline-offset:3px}
+@media(min-width:1200px){
+  .map-onboarding .map-onboard-body{grid-template-columns:170px minmax(0,1fr);gap:55px}
+  .map-onboarding .map-journey{min-height:800px}
+  .map-onboarding .map-choice{min-height:224px}
+}
+@media(max-width:800px){
+  .map-onboarding .map-onboard-body{grid-template-columns:108px minmax(0,1fr);gap:25px;padding:15px 24px 48px}
+  .map-onboarding .map-onboard-sidebar{min-height:750px}
+  .map-onboarding .map-journey{min-height:700px}
+  .map-onboarding .map-journey-icon{width:60px;height:60px}
+  .map-onboarding .map-journey-caption b{font-size:13px}
+  .map-onboarding .map-journey-caption strong{font-size:12px}
+  .map-onboarding .map-progress{margin-bottom:42px;gap:12px}
+  .map-onboarding .map-intro{min-height:235px}
+  .map-onboarding .map-choice{grid-template-columns:34% minmax(0,1fr) 33px;min-height:180px;padding:10px 18px 10px 8px}
+  .map-onboarding .map-choice-art{height:172px}
+  .map-onboarding .map-choice-indicator{width:34px;height:34px}
+  .map-onboarding .map-onboard-footer{min-height:128px}
+  .map-onboarding .map-next{min-height:68px}
+}
+@media(max-width:600px){
+  .map-onboarding .map-onboard-header{height:80px;min-height:80px;padding:0 20px}
+  .map-onboarding .map-onboard-header .brand-lockup{width:127px}
+  .map-onboarding .map-onboard-body{display:block;padding:5px 18px 35px}
+  .map-onboarding .map-onboard-sidebar{border:0;min-height:unset;padding:0 0 18px}
+  .map-onboarding .map-journey{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-height:unset;max-width:none;gap:7px}
+  .map-onboarding .map-journey-step{align-items:center;text-align:center;min-height:75px;gap:7px;padding:0}
+  .map-onboarding .map-journey-step::before,
+  .map-onboarding .map-journey-step:not(:last-child)::after{display:none}
+  .map-onboarding .map-journey-icon{width:42px;height:42px}
+  .map-onboarding .map-journey-icon svg{width:19px;height:19px}
+  .map-onboarding .map-journey-caption{gap:1px}
+  .map-onboarding .map-journey-caption b{display:none}
+  .map-onboarding .map-journey-caption strong{font-size:10px;letter-spacing:0}
+  .map-onboarding .map-progress{font-size:9px;letter-spacing:.12em;gap:9px;margin:10px 0 37px}
+  .map-onboarding .map-progress>div span{height:10px}
+  .map-onboarding .map-progress>b{font-size:15px;min-width:39px}
+  .map-onboarding .map-intro{min-height:185px}
+  .map-onboarding .map-intro h1{font-size:clamp(34px,8.7vw,54px);letter-spacing:-.065em;margin-bottom:14px}
+  .map-onboarding .map-intro p{font-size:15px}
+  .map-onboarding .map-section-title{font-size:37px;margin-bottom:26px}
+  .map-onboarding .map-choices{gap:15px}
+  .map-onboarding .map-choice{grid-template-columns:108px minmax(0,1fr) 28px;gap:7px;min-height:142px;padding:9px 12px 9px 0;border-radius:18px}
+  .map-onboarding .map-choice-art{height:132px;width:120px}
+  .map-onboarding .map-choice-text{gap:7px}
+  .map-onboarding .map-choice-text strong{font-size:17px}
+  .map-onboarding .map-choice-text small{font-size:12px}
+  .map-onboarding .map-choice-indicator{width:27px;height:27px}
+  .map-onboarding .map-choice-indicator svg{width:16px;height:16px}
+  .map-onboarding .map-onboard-footer{margin:0 18px;padding:18px 0 25px;min-height:120px;grid-template-columns:1fr 1.6fr;gap:11px}
+  .map-onboarding .map-back,.map-onboarding .map-next{font-size:13px;gap:6px}
+  .map-onboarding .map-back{padding:9px 0}
+  .map-onboarding .map-back svg,.map-onboarding .map-next svg{width:20px;height:20px}
+  .map-onboarding .map-next{min-height:58px;border-radius:14px;padding:10px}
+  .map-onboarding .map-form-stack,.map-onboarding .map-vibe-grid{padding:18px}
+  .map-onboarding .map-landscape-top{width:720px;right:-475px;top:120px;opacity:.32}
+  .map-onboarding .map-landscape-bottom{width:770px;left:-130px;bottom:100px;opacity:.28}
+}
+@media(max-width:375px){
+  .map-onboarding .map-choice{grid-template-columns:90px minmax(0,1fr) 22px;min-height:132px}
+  .map-onboarding .map-choice-art{width:103px;height:121px}
+  .map-onboarding .map-choice-text strong{font-size:15px}
+  .map-onboarding .map-choice-text small{font-size:11px}
+  .map-onboarding .map-next{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .map-onboarding .map-choice,
+  .map-onboarding .map-next,
+  .map-onboarding .map-back,
+  .map-onboarding .map-journey-icon{transition:none}
+}
