@@ -274,6 +274,87 @@ export function registerCreatorEngineRoutes(app:FastifyInstance,pool?:DbPool,aut
     return ok({missionIds:body.missionIds,revision:updated.rows[0].revision});
   }));
 
+
+  // Atomic cloud editor snapshot. Every save is explicit, scoped to the
+  // authenticated workspace and guarded by a revision. No partial mission
+  // writes are committed if a later insert or audit step fails.
+  app.put('/v1/orgs/:oid/experiences/:eid/draft',async(req,rep)=>guarded(req,rep,true,async(client,u,oid)=>{
+    const {eid}=req.params as {eid:string};
+    const body=req.body as {draft?:unknown;expectedRevision?:unknown}|undefined;
+    const draft=body?.draft;
+    if(!uuid.test(eid)||!positiveRevision(body?.expectedRevision)
+      || !record(draft)||!text(draft.name,160)||!types.includes(String(draft.type))
+      || !Array.isArray(draft.missions)||draft.missions.length>60) return bad(400,'INVALID_CLOUD_DRAFT');
+    const validated:{kind:string;title:string;description:string;points:number;publicConfig:Record<string,unknown>;privateValidation:Record<string,unknown>}[]=[];
+    for(const m of draft.missions) {
+      if(!record(m))return bad(400,'INVALID_LOCAL_MISSION');
+      const kind=draft.type==='quiz'?'quiz':String(m.kind);
+      const fields=missionFields({kind,title:m.name,points:m.points,
+        publicConfig:kind==='quiz'?{question:m.question,options:m.options}:{},
+        privateValidation:kind==='quiz'?{correctIndex:m.correctIndex}:kind==='qr'?{code:m.code}:{}});
+      if(!fields || typeof m.description!=='string'||m.description.length>1000) return bad(400,'INVALID_LOCAL_MISSION');
+      validated.push({kind,title:fields.title,points:fields.points,publicConfig:fields.publicConfig,privateValidation:fields.privateValidation,description:m.description});
+    }
+    const safeDraft:Record<string,unknown>={};let mediaSkipped=false;
+    for(const key of ['name','subtitle','type','palette','welcome','buttonText','blocks','reward','publication','createdAt']){
+      if(draft[key]===undefined)continue;
+      if(key==='reward'&&record(draft[key])){
+        const reward={...draft[key]};
+        for(const k of ['image','imageUrl'])if(typeof reward[k]==='string'&&/^data:/i.test(reward[k] as string)){
+          reward[k]='';mediaSkipped=true;
+        }
+        safeDraft[key]=reward;
+      }else safeDraft[key]=draft[key];
+    }
+    const config=settings({studio:safeDraft});
+    if(!config)return bad(400,'INVALID_CLOUD_DRAFT_SETTINGS');
+    let brandConfig:Record<string,unknown>|null=null;
+    if(record(draft.brand)){
+      const brand={...draft.brand};
+      for(const k of ['logo','cover','coverMobile','coverDesktop','logoUrl','coverUrl','coverMobileUrl','coverDesktopUrl']){
+        if(typeof brand[k]==='string'&&/^data:/i.test(brand[k] as string)){brand[k]='';mediaSkipped=true;}
+      }
+      brandConfig=settings(brand);
+      if(!brandConfig)return bad(400,'INVALID_BRAND');
+    }
+    const current=await client.query<{id:string;revision:number;lifecycle_status:string;experience_type:string;brand_kit_id:string|null}>(
+      'SELECT id,revision,lifecycle_status,experience_type,brand_kit_id FROM experiences WHERE organization_id=$1 AND id=$2 FOR UPDATE',[oid,eid]);
+    const exp=current.rows[0];
+    if(!exp||exp.lifecycle_status!=='draft'||exp.experience_type!==draft.type)return bad(409,'NOT_FOUND_OR_NOT_DRAFT');
+    if(exp.revision!==body.expectedRevision)return bad(409,'REVISION_CONFLICT');
+    let brandKitId=exp.brand_kit_id;
+    if(brandConfig){
+      const accent=brandConfig.accent;
+      const color=typeof accent==='string'&&/^#[a-f\d]{6}$/i.test(accent)?accent:'#981CEB';
+      const name=text(brandConfig.name,100)??text(draft.name,100);
+      if(brandKitId){
+        // A reusable kit may be shared across multiple experiences. Clone it
+        // rather than changing another event when this editor draft is saved.
+        const shared=await client.query('SELECT id FROM experiences WHERE organization_id=$1 AND brand_kit_id=$2 AND id<>$3 LIMIT 1',[oid,brandKitId,eid]);
+        if(shared.rows[0])brandKitId=null;
+      }
+      if(brandKitId){
+        const updated=await client.query('UPDATE brand_kits SET name=$3,primary_color=$4,settings=$5::jsonb,revision=revision+1,updated_at=now() WHERE organization_id=$1 AND id=$2 RETURNING id',
+          [oid,brandKitId,name,color,JSON.stringify(brandConfig)]);
+        if(!updated.rows[0])return bad(409,'BRAND_KIT_CHANGED');
+      }else{
+        const inserted=await client.query<{id:string}>('INSERT INTO brand_kits(organization_id,name,primary_color,settings) VALUES($1,$2,$3,$4::jsonb) RETURNING id',
+          [oid,name,color,JSON.stringify(brandConfig)]);
+        brandKitId=inserted.rows[0].id;
+      }
+    }
+    await client.query('DELETE FROM missions WHERE organization_id=$1 AND experience_id=$2',[oid,eid]);
+    for(let i=0;i<validated.length;i++){
+      const m=validated[i];
+      await client.query('INSERT INTO missions(organization_id,experience_id,position,kind,title,description,points,public_config,private_validation) VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb)',
+        [oid,eid,i,m.kind,m.title,m.description,m.points,JSON.stringify(m.publicConfig),JSON.stringify(m.privateValidation)]);
+    }
+    const changed=await client.query<{revision:number}>('UPDATE experiences SET title=$3,settings=$4::jsonb,brand_kit_id=$5,revision=revision+1,updated_at=now() WHERE organization_id=$1 AND id=$2 RETURNING revision',
+      [oid,eid,draft.name,JSON.stringify(config),brandKitId]);
+    await audit(client,oid,u.id,'experience.draft_saved','experience',eid);
+    return ok({id:eid,revision:changed.rows[0].revision,missionCount:validated.length,mediaSkipped});
+  }));
+
   // One-way, idempotent import of *legacy local browser drafts*. Existing cloud drafts
   // are never overwritten; no localStorage deletion or public event publication.
   app.post('/v1/orgs/:oid/experiences/import',async(req,rep)=>guarded(req,rep,true,async(client,u,oid)=>{

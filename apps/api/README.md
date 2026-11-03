@@ -1,6 +1,6 @@
 # Hoople lite API — Stage 1 creator and draft CRUD (pre-production)
 
-Fastify 5 + TypeScript + PostgreSQL 16+. The React **dashboard** optionally connects to this API for creator login/workspace and one-way draft imports; its **editor** still runs in `localStorage` and does not autosave to the API. No production OIDC provider, database, staging domain, media pipeline or event runtime has been provisioned.
+Fastify 5 + TypeScript + PostgreSQL 16+. The React **dashboard** optionally connects to this API for creator login/workspace and one-way draft imports; its editor runs browser-local by default and can explicitly open/save cloud drafts; it does not autosave to the API. No production OIDC provider, database, staging domain, media pipeline or event runtime has been provisioned.
 
 ## Start and check
 
@@ -64,6 +64,7 @@ All paths are under `/v1/orgs/:oid`. `GET` requires membership. Writes require `
 | PATCH, DELETE | `/experiences/:eid/missions/:mid` | Edit / delete a draft mission |
 | PUT | `/experiences/:eid/missions/order` | Reorder all mission IDs atomically |
 | POST | `/experiences/import` | Idempotent, **one-way** legacy browser draft import |
+| PUT | `/experiences/:eid/draft` | Atomic cloud editor snapshot with `expectedRevision`, private validation segregation and 409 conflict |
 
 For PATCH, send `expectedRevision` (positive integer) from latest read; 409 means stale state or unavailable draft. Reorder requires the experience's revision and the **complete** ordered mission ID list. Revisions increment on updates. Quiz answer indices and QR verification codes are stored under `private_validation` and never accepted in `public_config`. Only authenticated organization owners/editors may receive private validation material; `viewer`/`analyst`/`billing` reads redact it. **There are no public attendee endpoints.**
 
@@ -71,9 +72,13 @@ Legacy import accepts `{ "draft": <normalized local draft> }`. It creates one ex
 
 ## Still pending
 
-- Connect React **editor** with authenticated cloud read/write, conflict handling and a safe two-way reconciliation strategy (dashboard session/workspaces/one-way import are wired).
+- Explicit authenticated cloud editor open/save is available without autosave; add session-aware autosave, media upload, two-way reconciliation and safe conflict resolution only after product review.
 - Real IdP interactive login test, session rotation/cleanup, abuse/rate limiting, HTTPS deployment, origin/cookie integration.
 - Immutable published versions, launch access gate and public attendee-safe projection routes. Stage 1 CRUD and optimistic revisions exist only for authenticated organizer drafts.
 - Media moderation, verified QR/quiz/rewards, participant engine, billing, privacy retention/consent, monitoring/backups and legal review.
 
 No feature here is ready for live attendees, real payouts or paid events without separate security/operations approval.
+
+## P0 staging smoke preflight
+
+With a provisioned HTTPS staging API using real OIDC and PostgreSQL, run `API_STAGING_URL=https://api.staging.example npm run security:staging` inside `apps/api`. This read-only check verifies HTTPS headers, ready database, unauthenticated denial, invalid Origin and OIDC flow cookie/redirect. Complete interactive login/logout, cross-tenant tests and restore exercise manually as documented in [`docs/P0_SECURITY_GATE.md`](../../docs/P0_SECURITY_GATE.md).

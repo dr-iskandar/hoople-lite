@@ -4,9 +4,9 @@ Updated 3 November 2026. This document is a release checklist, **not an assertio
 
 ## Current audited source
 
-- React/Vite studio (interactive editor persists to historical `questpop-studio-v1` in `localStorage`). Cloud dashboard import is optional, one-way, and does not overwrite local drafts.
+- React/Vite studio (default editor persists to historical `questpop-studio-v1` in `localStorage`). Cloud dashboard import is optional and one-way. Authenticated cloud drafts can now be edited in memory and explicitly saved with a revision check; local drafts are not overwritten.
 - Fastify 5 + PostgreSQL RLS API, OIDC login, HttpOnly sessions, exact-origin mutation guards, membership-scoped CRUD and private mission validation.
-- The demo `#play=` share URL contains client-readable data. It must not be used with real attendee PII, QR secrets, answer keys, payments or genuine publishing embargoes.
+- The demo `#play=` share URL contains a sanitized client-readable presentation projection with new links omitting QR secrets and answer keys. Old links may already have leaked them; no existing link can be retroactively protected. Never use the link for PII, payments or real embargoes.
 - No PHP application is present in this repository. Check other services on the same host separately.
 
 ## Blockers before handling real creator or participant data
@@ -18,7 +18,7 @@ Updated 3 November 2026. This document is a release checklist, **not an assertio
 - [ ] Configure ingress/WAF rate limits, connection/body/header timeouts, IP abuse controls for auth/start/callback and session APIs, request size budgets and alerting. API process instances alone do not provide a reliable distributed rate limiter.
 - [ ] Set role-based access rights, log access to private organizer records, review who can read mission secrets; prohibit raw request bodies, cookies, tokens, PII, camera/location data and QR secrets in logs/telemetry.
 - [ ] Define purpose, consent text, owner, retention periods, subject access/export/deletion procedures and breach-response playbook; obtain Indonesian privacy/legal review (including **UU PDP**) before collecting real participant data.
-- [ ] Replace browser-share payloads with opaque server-backed public URLs, immutable published versions and server-verified points/QR/quiz/rewards. Enforce scheduled release using server/database time on **every** public endpoint. Never trust visitor-side scoring.
+- [ ] Before production, replace sanitized browser-demo share payloads with opaque server-backed public URLs, immutable published versions and server-verified points/QR/quiz/rewards. Enforce scheduled release using server/database time on **every** public endpoint. Never trust visitor-side scoring.
 - [ ] Introduce private scoped image upload, MIME and size validation, EXIF stripping, malware/content review, quarantine, access expiry and deletion before handling any photo or face data. Face recognition requires a separate DPIA/privacy/legal approval and a non-biometric alternative.
 - [ ] Define incident runbook: revoke sessions/tokens, rotate credentials, contain affected tenant, preserve minimal audit evidence, restore backups, notify affected users/regulators where required.
 
@@ -40,3 +40,5 @@ Updated 3 November 2026. This document is a release checklist, **not an assertio
 ## Explicit limitations
 
 This hardening pass updates dependencies and protective API headers; it does **not** encrypt browser `localStorage`, provision production OIDC/DB, add distributed rate limiting, implement GDPR/PDP workflows, or make `#play=` links private. Do not put sensitive user data in `localStorage` or public URL payloads.
+
+For the newly added code-only cloud editor and staging checklist, see [`P0_SECURITY_GATE.md`](P0_SECURITY_GATE.md). Green CI does not replace a real IdP, deployment and browser verification.

@@ -34,3 +34,8 @@ button.workspace-card:hover{border-color:#b99cdb;background:#f7f1fe}
 .spin{animation:cloudspin 1.25s linear infinite}
 @keyframes cloudspin{to{transform:rotate(360deg)}}
 @media(max-width:720px){.cloud-workspace{padding:18px;border-radius:20px}.cloud-connect,.cloud-import{align-items:stretch;flex-direction:column}.cloud-connect button,.cloud-import button{justify-content:center}.cloud-controls{flex-direction:column;align-items:stretch}.cloud-list{grid-template-columns:1fr}.cloud-list small{margin-left:auto}}
+
+/* An explicit cloud edit action stays reachable on narrow studio side panels. */
+.cloud-list>div{flex-wrap:wrap}
+.cloud-list .cloud-outline{margin-left:auto;min-height:32px;padding:0 10px;font-size:11px}
+.cloud-list .cloud-outline:disabled{opacity:.55;cursor:not-allowed}

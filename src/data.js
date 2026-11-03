@@ -95,12 +95,55 @@ export function initialExperiences(){
   return [a,b];
 }
 export function loadExperiences(){try{const v=JSON.parse(localStorage.getItem('questpop-studio-v1'));if(Array.isArray(v))return v.map(e=>normalizeExperience(e))}catch{}return initialExperiences()}
-export function makeShareUrl(exp){
+
+const demoText = (value,max=320) => typeof value==='string' ? value.slice(0,max) : '';
+const demoColor = (value,fallback) => typeof value==='string' && /^#[a-f0-9]{6}$/i.test(value)?value:fallback;
+// Public demo links are deliberately presentation-only. Do not serialize creator
+// validation, QR tokens, answer keys, media blobs, participant details or cloud IDs.
+export function publicDemoProjection(exp){
+  if(!exp || !Array.isArray(exp.missions) || exp.missions.length>60) return null;
   const brand=getBrand(exp);
-  const payload={name:exp.name,subtitle:exp.subtitle,type:exp.type,palette:exp.palette,welcome:exp.welcome,buttonText:exp.buttonText,missions:exp.missions,reward:{...exp.reward,image:''},publication:exp.publication,blocks:exp.blocks,brand:{...brand,logo:'',cover:'',coverMobile:'',coverDesktop:''}};
-  try{return location.origin+location.pathname+'#play='+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(payload)))))}catch{return location.origin+location.pathname}
+  return {
+    demoPublic:true, name:demoText(exp.name,160), subtitle:demoText(exp.subtitle,600),
+    type:['passport','hunt','quiz'].includes(exp.type)?exp.type:'passport',
+    palette:demoText(exp.palette,24), welcome:demoText(exp.welcome,300),
+    buttonText:demoText(exp.buttonText,80),
+    missions:exp.missions.map((m,i)=>({
+      id:String(i),kind:['checkin','photo','qr','quiz'].includes(m.kind)?m.kind:'checkin',
+      name:demoText(m.name,160),description:demoText(m.description,600),
+      points:Math.max(0,Math.min(100000,Number(m.points)||0)),
+      question:demoText(m.question,1000),
+      options:Array.isArray(m.options)?m.options.slice(0,4).map(v=>demoText(v,500)):[],
+    })),
+    reward:{name:demoText(exp.reward?.name,160),threshold:Number(exp.reward?.threshold)||1,
+      footnote:demoText(exp.reward?.footnote,240)},
+    publication:{mode:exp.publication?.mode==='scheduled'?'scheduled':'now',
+      timezone:demoText(exp.publication?.timezone,60),startsAt:demoText(exp.publication?.startsAt,64)},
+    blocks:(Array.isArray(exp.blocks)?exp.blocks:[]).slice(0,20)
+      .map((b,i)=>({id:String(i),text:demoText(b.text,800)})),
+    brand:{name:demoText(brand.name,100),tagline:demoText(brand.tagline,200),
+      accent:demoColor(brand.accent,'#A41CED'),bg:demoColor(brand.bg,'#F9F5FF'),soft:demoColor(brand.soft,'#E8D1FC'),ink:demoColor(brand.ink,'#211A2C'),
+      font:['grotesk','sans','serif'].includes(brand.font)?brand.font:'grotesk'},
+  };
+}
+export function makeShareUrl(exp){
+  const projection=publicDemoProjection(exp);
+  if(!projection)return '';
+  try {
+    const payload=btoa(unescape(encodeURIComponent(JSON.stringify(projection))));
+    if(payload.length>64000)return '';
+    return location.origin+location.pathname+'#play='+encodeURIComponent(payload);
+  }catch{return ''}
 }
 export function sharedExperience(){
-  if(!location.hash.startsWith('#play='))return null;
-  try{const p=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(location.hash.slice(6))))));return p?.name&&Array.isArray(p.missions)?normalizeExperience({...p,id:'share',status:'published'}):null}catch{return null}
+  if(!location.hash.startsWith('#play=') || location.hash.length>90000)return null;
+  try{
+    const raw=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(location.hash.slice(6))))));
+    const safe=publicDemoProjection(raw); // Old demo URLs are also treated as untrusted data.
+    if(!safe?.name || !safe.missions.length)return null;
+    const normalized=normalizeExperience({...safe,id:'share',status:'published'});
+    return {...normalized,demoPublic:true,missions:normalized.missions.map(m=>({
+      ...m,code:'',correctIndex:null,
+    }))};
+  }catch{return null}
 }

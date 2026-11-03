@@ -6,7 +6,7 @@ Last updated: 2 November 2026. Canonical source: `https://github.com/dr-iskandar
 
 Hoople lite lets Indonesian event organizers, agencies, brands and communities build browser-based interactive activities. The present application is a **React/Vite frontend prototype**, not an operating SaaS. The larger Hoople vision is an end-to-end event and community platform; no release dates are committed.
 
-**P0 + Stage 1 private draft CRUD code:** `apps/api` contains Fastify/TypeScript health checks, creator OIDC code/PKCE + cookie sessions, organization/workspace CRUD, authenticated brand kit/experience/mission draft CRUD, legacy import, and PostgreSQL migrations for identities, organizations, audit, sessions and builder entities. RLS and role checks are enforced in code/policies. React dashboard offers **opt-in** session/workspace and one-way import if `VITE_API_BASE_URL` is set; the interactive editor is still localStorage-based. No real staging IdP or live production database has been configured.
+**P0 + Stage 1 private draft CRUD code:** `apps/api` contains Fastify/TypeScript health checks, creator OIDC code/PKCE + cookie sessions, organization/workspace CRUD, authenticated brand kit/experience/mission draft CRUD, legacy import, and PostgreSQL migrations for identities, organizations, audit, sessions and builder entities. RLS and role checks are enforced in code/policies. React dashboard offers **opt-in** session/workspace and one-way import if `VITE_API_BASE_URL` is set; imported cloud drafts can now be deliberately loaded into an in-memory editor and saved with a revision guard, while default local drafts still use localStorage. No real staging IdP or live production database has been configured.
 
 This product evolved iteratively from a quest studio into a hybrid editor with branding, ID/EN, quest-style onboarding, mission types, rewards, simulated scheduling, AI-assisted draft templates and a five-stage roadmap. It was rebranded from QuestPop to Hoople lite with the owner's logo and purple/black/white identity. Historical `questpop-*` browser storage keys remain for backwards compatibility.
 
@@ -36,14 +36,14 @@ This product evolved iteratively from a quest studio into a hybrid editor with b
 | AI | Local templates and external JSON import | Server LLM adapter, moderation, quota |
 | Pricing | Illustrative sub-Rp100k tiers | Real billing/refunds after legal and ops review |
 
-**Security warning:** Current `#play=` links embed client-readable event JSON. They cannot protect correct quiz answers, mission secrets, prizes, event embargoes or sensitive attendee data. Do not reuse this design for real-world access control, paid events or regulated data.
+**Security warning:** Current `#play=` links embed a sanitized, client-readable public demo projection (answer keys and QR codes removed). Shared scoring is simulated; links still cannot protect prizes, event embargoes or sensitive attendee data. Do not reuse this design for real-world access control, paid events or regulated data.
 
 ## 4. Source map
 
 | Files | Responsibility |
 | --- | --- |
 | `src/main.jsx`, `src/data.js` | App shell, routes, storage, experience models |
-| `src/WorkspacePanel.jsx`, `src/cloudApi.js`, `src/workspace-cloud.css` | Opt-in creator session, active workspace, create workspace, and deliberate one-way browser draft copy |
+| `src/WorkspacePanel.jsx`, `src/cloudApi.js`, `src/cloudDraft.js`, `src/workspace-cloud.css` | Authenticated workspace, browser draft import, explicit cloud edit/save |
 | `src/Builder.jsx`, `src/MissionInspector.jsx`, `src/mission-modal.css` | Hybrid builder, mission drag/drop, create/edit modal |
 | `src/RewardInspector.jsx`, `src/reward-schedule.css` | Reward image, points/conditions and short terms |
 | `src/BrandingInspector.jsx`, `src/brand.css` | Branding, assets, desktop/mobile crop |
@@ -71,7 +71,7 @@ Styling lives in component CSS plus inherited global styles. Check cascade, focu
 
 ### P1 — Make Hoople lite authoritative
 
-- Wire the **interactive builder** to server-side draft CRUD (currently API + dashboard import only), with optimistic conflict UX and a safe read-before-write migration strategy. Keep `questpop-*` keys intact.
+- Refine the **interactive builder**'s explicit cloud save into secure autosave only after conflict and offline UX design; cloud drafts now load and save on command with 409 guards, but local mode remains a prototype. Keep `questpop-*` keys intact.
 - Add asset upload endpoints and moderation for local photos/brand covers omitted from import; never embed media blobs into arbitrary JSON.
 - Implement server-side verification for check-in, QR, photo evidence and quiz; prevent answer/QR secret leaks.
 - Add point ledger, idempotent mission completions, atomic reward inventory/claim and audit trail.
@@ -112,3 +112,7 @@ Start with a secure thin vertical slice: **one organizer → one event → one p
 5. Hoople lite as independent deployment vs Experience module inside Hoople Event.
 
 These are unresolved choices, not approvals to process payments, biometrics or sensitive data.
+
+## 3 November P0 security continuation
+
+A code-only vertical slice of cloud editor persistence now exists: authenticated editor load, opt-in Save to cloud, revision conflicts, atomic replacement of mutable draft missions, and redacted public demo links. These changes must pass CI and a real staging IdP/DB test before relying on them for organizer data. See `docs/P0_SECURITY_GATE.md` for the non-mutating smoke tool, manual browser tests and remaining release blockers.

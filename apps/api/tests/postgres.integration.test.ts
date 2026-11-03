@@ -123,6 +123,43 @@ test('real PostgreSQL: creator sessions, CRUD and cross-tenant RLS', {
     assert.equal(importedDetails.json().missions[0].privateValidation.code,'SCAN-KEY');
     assert.ok(!Object.hasOwn(importedDetails.json().missions[0].publicConfig,'code'));
 
+
+    // Explicit cloud editor save is atomic and revision-gated. It must not
+    // expose private QR/quiz validation through the public mission config.
+    const snapshotUrl=`/v1/orgs/${orgA}/experiences/${imported.json().id}/draft`;
+    const savedDraft={...localDraft,name:'Legacy Quest Updated',reward:{name:'Sticker',footnote:'New terms',image:'data:image/png;base64,ZmFrZQ=='},
+      missions:[{id:'m1',kind:'quiz',name:'Quiz',description:'A question',points:20,
+        question:'Which?',options:['One','Two','Three','Four'],correctIndex:2},
+        {id:'m2',kind:'qr',name:'Checkpoint',description:'Scan',points:30,code:'PRIVATE-CHECKPOINT'}]};
+    const save=await app.inject({method:'PUT',url:snapshotUrl,headers:headers(a.token),
+      payload:{expectedRevision:1,draft:savedDraft}});
+    assert.equal(save.statusCode,200,save.body);
+    assert.equal(save.json().revision,2);
+    assert.equal(save.json().mediaSkipped,true);
+    const afterSave=await app.inject({method:'GET',url:`/v1/orgs/${orgA}/experiences/${imported.json().id}`,headers:headers(a.token)});
+    assert.equal(afterSave.statusCode,200,afterSave.body);
+    assert.equal(afterSave.json().missions.length,2);
+    assert.equal(afterSave.json().missions[0].privateValidation.correctIndex,2);
+    assert.equal(afterSave.json().missions[1].privateValidation.code,'PRIVATE-CHECKPOINT');
+    assert.ok(!Object.hasOwn(afterSave.json().missions[0].publicConfig,'correctIndex'));
+    assert.ok(!Object.hasOwn(afterSave.json().missions[1].publicConfig,'code'));
+    assert.equal(afterSave.json().settings.studio.reward.image,'');
+    const stale=await app.inject({method:'PUT',url:snapshotUrl,headers:headers(a.token),
+      payload:{expectedRevision:1,draft:{...savedDraft,name:'Overwrite attempt'}}});
+    assert.equal(stale.statusCode,409,stale.body);
+    const foreignSave=await app.inject({method:'PUT',url:snapshotUrl,headers:headers(b.token),
+      payload:{expectedRevision:2,draft:savedDraft}});
+    assert.equal(foreignSave.statusCode,404,foreignSave.body);
+    const originSave=await app.inject({method:'PUT',url:snapshotUrl,
+      headers:{cookie:`__Host-hoople_session=${a.token}`,origin:'https://attacker.example.test'},
+      payload:{expectedRevision:2,draft:savedDraft}});
+    assert.equal(originSave.statusCode,403,originSave.body);
+    const invalidSave=await app.inject({method:'PUT',url:snapshotUrl,headers:headers(a.token),
+      payload:{expectedRevision:2,draft:{...savedDraft,missions:[{kind:'qr',name:'Bad',description:'',points:1}]}}});
+    assert.equal(invalidSave.statusCode,400,invalidSave.body);
+    const afterInvalid=await app.inject({method:'GET',url:`/v1/orgs/${orgA}/experiences/${imported.json().id}`,headers:headers(a.token)});
+    assert.equal(afterInvalid.json().revision,2);
+
     const expDeleted=await app.inject({method:'DELETE',url:`/v1/orgs/${orgA}/experiences/${expId}`,
       headers:headers(a.token)});
     assert.equal(expDeleted.statusCode,200,expDeleted.body);
