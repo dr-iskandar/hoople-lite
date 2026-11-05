@@ -2,7 +2,7 @@
 
 Hoople lite is a bilingual (Bahasa Indonesia / English) interactive experience builder for event organizers, brands and communities. This package contains the React/Vite source, bundled assets, product timeline and backend planning documents.
 
-**Development status:** the experience editor and participant preview remain a browser-only demo. The dashboard now has an **optional connection** to the Stage 1 API (`apps/api`), including creator sessions, organization workspaces, authenticated brand-kit / experience / mission draft CRUD, and an explicit one-way import of local drafts. It requires separately configured PostgreSQL and OIDC; no deployed production service, cloud editor autosave, live event persistence, billing or participant engine exists yet.
+**Development status:** the participant preview remains a browser-only demo. Organizers can explicitly open and save authenticated cloud drafts in the editor, but changes are not autosaved and cloud drafts are never publicly released. The dashboard now has an **optional connection** to the Stage 1 API (`apps/api`), including creator sessions, organization workspaces, authenticated brand-kit / experience / mission draft CRUD, and an explicit one-way import of local drafts. It requires separately configured PostgreSQL and OIDC; no deployed production service, automatic cloud autosave, public event runtime, billing or participant engine exists yet.
 
 **Source of truth:** [github.com/dr-iskandar/hoople-lite](https://github.com/dr-iskandar/hoople-lite). This is the public developer repository; the owner-private ChatGPT Sites preview is a separate deployment and is **not automatically updated** by GitHub pushes.
 
@@ -15,7 +15,7 @@ Hoople lite is a bilingual (Bahasa Indonesia / English) interactive experience b
 
 ## Run locally
 
-Requirements: Node.js 20+ and npm.
+Requirements: a currently supported Node.js LTS (24.22.1+ or 26.12.1+) and npm. Use `.nvmrc` to select the project default.
 
 ```bash
 npm ci
@@ -58,16 +58,16 @@ To offer creator login/workspace/import in the React dashboard, copy the **root*
 
 ## Current limitations
 
-**This is a prototype, not a production event platform.** The interactive editor still reads/writes `localStorage`; importing copies data to authenticated API drafts but does **not** activate automatic cloud editing, public event URLs or authoritative launches. Base64 images are omitted from cloud copies pending a controlled upload service; local originals remain untouched. The AI wizard can create template-based drafts and import external AI-generated JSON; it does not call an LLM API. Payment checkout, secure QR verification, attendee user accounts, cloud media uploads, actual custom domains, ticketing, class booking, face recognition and automated event entry/exit are **not implemented**.
+**This is a prototype, not a production event platform.** Local prototype drafts still use `localStorage`; imported authenticated cloud drafts can be explicitly opened and saved with optimistic revision checks, but remain in memory and do **not** enable autosave, public event URLs or authoritative launches. Base64 images are omitted from cloud copies pending a controlled upload service; local originals remain untouched. The AI wizard can create template-based drafts and import external AI-generated JSON; it does not call an LLM API. Payment checkout, secure QR verification, attendee user accounts, cloud media uploads, actual custom domains, ticketing, class booking, face recognition and automated event entry/exit are **not implemented**.
 
-The `#play` demo URL contains a client-readable experience payload. Do not use this architecture for real attendee records, secrets, payment flows, secure prize redemption or genuine event access control. See [backend architecture](docs/BACKEND_ARCHITECTURE.md) for recommended server enforcement, and [platform roadmap](docs/EVENT_PLATFORM_ROADMAP.md) for the next modules.
+The `#play` demo URL contains a **sanitized, client-readable presentation payload** without QR secrets or correct answers; the shared player visibly simulates verification. Do not use this architecture for real attendee records, secrets, payment flows, secure prize redemption or genuine event access control. See [backend architecture](docs/BACKEND_ARCHITECTURE.md) for recommended server enforcement, and [platform roadmap](docs/EVENT_PLATFORM_ROADMAP.md) for the next modules.
 
 ## Project structure
 
 | Path | Purpose |
 | --- | --- |
 | `src/main.jsx` | App shell, navigation and creator dashboard |
-| `src/WorkspacePanel.jsx`, `src/cloudApi.js` | Opt-in creator session/workspace panel and one-way draft import |
+| `src/WorkspacePanel.jsx`, `src/cloudApi.js`, `src/cloudDraft.js` | Creator session/workspace panel, one-way import and explicit in-memory cloud edit/save |
 | `src/Landing.jsx` | Landing page and interactive preview |
 | `src/RoadmapTimeline.jsx` | Clickable, bilingual product timeline |
 | `src/roadmap-timeline.css` | Timeline responsive styles |
@@ -76,7 +76,7 @@ The `#play` demo URL contains a client-readable experience payload. Do not use t
 | `src/EventWizard.jsx`, `src/wizardEngine.js` | Guided event draft and JSON import |
 | `src/data.js`, `src/i18n.jsx` | Local data model, templates and translations |
 | `src/hoople-lite.css`, `hoople-wordmark.png` | Hoople lite visual identity |
-| `docs/` | Backend blueprint and end-to-end platform roadmap |
+| `docs/` | Backend blueprint, product roadmap and [P0 security gate](docs/P0_SECURITY_GATE.md) |
 | `AGENTS.md` | Persistent AI coding-agent guardrails and review checklist |
 | `docs/DEVELOPER_HANDOFF.md` | How the project works and what to build next |
 | `docs/VIBE_CODING_WORKFLOW.md` | Read/test/push/PR conventions for AI-assisted development |
@@ -87,8 +87,16 @@ The `#play` demo URL contains a client-readable experience payload. Do not use t
 
 Existing prototype browser storage deliberately keeps its historical `questpop-*` keys for compatibility. The dashboard can **copy** experience drafts from `questpop-studio-v1` into an active cloud workspace when API auth is configured. Import is idempotent per `(organization_id, legacy_draft_id)`; a second import skips the existing cloud draft instead of overwriting it. Browser drafts are not deleted or replaced. Images stored as `data:` URLs cannot yet be uploaded; the import omits them and indicates that they will need re-uploading later.
 
+## Security and production readiness
+
+Read [Security hardening checklist](docs/SECURITY_HARDENING.md) and [private vulnerability reporting policy](SECURITY.md) before exposing the API or storing real creator data. The CI checks both dependency trees with `npm audit --audit-level=high` and runs weekly; GitHub Dependabot opens dependency-update PRs. For HTTPS production, configure TLS, managed database encryption/backups, an OIDC provider and ingress rate limiting. **Do not use `#play=` browser demo links for real events or participant data**; they contain client-readable payloads.
+
 ## Handoff
 
 Develop the backend as a separate, authenticated service before launching paid or real-world events. Plan tenant isolation, consent, media moderation, idempotent payments, ticket validation, session booking, audit logs and an opt-in/non-biometric alternative to face recognition.
 
 © 2026 Hoople lite. Product prototype.
+
+## P0 security gate
+
+Cloud editing is deliberately explicit: open an authenticated draft from the active workspace, make changes, then select **Save to cloud**. Conflicts (409) do not overwrite another user's changes. Browser-local drafts remain unmodified; cloud editor copies are not written back to `questpop-*` storage. New public demo links redact QR/quiz secrets and make no claim of server verification. Review [staging and production blockers](docs/P0_SECURITY_GATE.md) before entering real data.

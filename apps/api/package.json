@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": "^24.22.1 || ^26.12.1"
   },
   "scripts": {
     "dev": "node --watch --import tsx src/server.ts",
@@ -12,11 +12,12 @@
     "start": "node dist/server.js",
     "test": "node --import tsx --test tests/*.test.ts",
     "db:migrate": "node --import tsx src/db/migrate.ts",
-    "db:setup:ci": "node --import tsx src/db/ci-setup.ts"
+    "db:setup:ci": "node --import tsx src/db/ci-setup.ts",
+    "security:staging": "node ops/staging-smoke.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.5",
-    "fastify": "^5.12.7",
+    "fastify": "^5.12.8",
     "openid-client": "^6.8.8",
     "pg": "^8.16.3"
   },

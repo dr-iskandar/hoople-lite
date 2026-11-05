@@ -52,3 +52,17 @@ test('organization writes fail closed when authentication is not configured', as
     assert.equal(session.statusCode,503);
   } finally { await app.close(); }
 });
+
+test('API responses carry privacy and framing protections', async () => {
+  const app = buildApp();
+  try {
+    for (const url of ['/health/live', '/v1/auth/session']) {
+      const response = await app.inject({method:'GET',url});
+      assert.equal(response.headers['cache-control'],'no-store');
+      assert.equal(response.headers['x-content-type-options'],'nosniff');
+      assert.equal(response.headers['x-frame-options'],'DENY');
+      assert.equal(response.headers['referrer-policy'],'no-referrer');
+      assert.match(String(response.headers['content-security-policy']),/frame-ancestors 'none'/);
+    }
+  } finally {await app.close();}
+});
