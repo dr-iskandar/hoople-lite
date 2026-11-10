@@ -18,7 +18,7 @@ The Node process **does not automatically read .env**. For Node >=20.6, create l
 ## PostgreSQL bootstrap
 
 1. Provision PostgreSQL 16+, schema/migration owner with DDL rights and separate login role named `hoople_api` (no SUPERUSER, BYPASSRLS or table ownership). Use managed, rotated credentials; never commit them.
-2. Provide the **migration owner's** `DATABASE_URL` and run `npm run db:migrate` to apply immutable `0001`, `0002` and `0003` (legacy import key). Do not edit an already-applied migration.
+2. Provide the **migration owner's** `DATABASE_URL` and run `npm run db:migrate` to apply immutable `0001`, `0002`, `0003`, and `0004` (HoPay staging checkout ledger). Do not edit an already-applied migration.
 3. Run `ops/grant_runtime.sql` as the migration owner. Configure the **runtime** `DATABASE_URL` using `hoople_api` and test readiness.
 4. Verify the restricted role's tenant behavior using `API_TEST_DATABASE_URL` and `npm test`. GitHub Actions provisions a disposable PostgreSQL container and executes the same tests. The CI provisioning helper refuses remote/non-CI databases.
 5. Configure OIDC on your chosen provider (issuer, client ID/secret, exact redirect URI), `WEB_ORIGIN` and a random 32-byte base64 `SESSION_ENCRYPTION_KEY`. Run under HTTPS with Secure cookies. `COOKIE_SECURE=false` is only available for localhost development.
@@ -71,9 +71,10 @@ Legacy import accepts `{ "draft": <normalized local draft> }`. It creates one ex
 
 ## Still pending
 
+- HoPay staging initiation is implemented but **NOT production billing**. Configure server-only `HOPAY_*` values; read [`docs/HOPAY_STAGING_INTEGRATION.md`](../../docs/HOPAY_STAGING_INTEGRATION.md) for route contract, staging plan prices, safety restrictions, and required HoPay webhook/response documentation. No payment can currently activate or extend a plan.
 - Connect React **editor** with authenticated cloud read/write, conflict handling and a safe two-way reconciliation strategy (dashboard session/workspaces/one-way import are wired).
 - Real IdP interactive login test, session rotation/cleanup, abuse/rate limiting, HTTPS deployment, origin/cookie integration.
 - Immutable published versions, launch access gate and public attendee-safe projection routes. Stage 1 CRUD and optimistic revisions exist only for authenticated organizer drafts.
-- Media moderation, verified QR/quiz/rewards, participant engine, billing, privacy retention/consent, monitoring/backups and legal review.
+- Media moderation, verified QR/quiz/rewards, participant engine, **verified billing/entitlements**, privacy retention/consent, monitoring/backups and legal review.
 
 No feature here is ready for live attendees, real payouts or paid events without separate security/operations approval.

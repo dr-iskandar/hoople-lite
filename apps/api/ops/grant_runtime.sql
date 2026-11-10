@@ -9,3 +9,4 @@ GRANT SELECT, INSERT ON audit_logs TO hoople_api;
 GRANT SELECT, INSERT, DELETE ON creator_sessions TO hoople_api;
 GRANT SELECT, INSERT, UPDATE ON creator_preferences TO hoople_api;
 GRANT SELECT, INSERT, UPDATE, DELETE ON brand_kits, experiences, missions TO hoople_api;
+GRANT SELECT, INSERT, UPDATE ON billing_checkout_requests TO hoople_api;

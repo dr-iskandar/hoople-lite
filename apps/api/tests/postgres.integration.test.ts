@@ -4,6 +4,7 @@ import {randomBytes, randomUUID} from 'node:crypto';
 import {Pool} from 'pg';
 import {buildApp} from '../src/app.js';
 import {createSession, setOrganizationContext, withCreator, type AuthSettings} from '../src/creator-auth.js';
+import {parseHopaySettings} from '../src/hopay.js';
 
 test('real PostgreSQL: creator sessions, CRUD and cross-tenant RLS', {
   skip: !process.env.API_TEST_DATABASE_URL,
@@ -14,7 +15,13 @@ test('real PostgreSQL: creator sessions, CRUD and cross-tenant RLS', {
     redirectUri:'https://api.example.com/v1/auth/callback',
     webOrigin:'https://studio.example.com',key:randomBytes(32),secureCookies:true,
   };
-  const app = buildApp(pool,{settings});
+  let gatewayCalls=0;
+  const app = buildApp(pool,{settings},{settings:parseHopaySettings({
+    HOPAY_CLIENT_ID:'a189669e-a650-41cb-a2ba-7d56bb40dbbe',
+    HOPAY_API_KEY:'HoPay-HP-testplaceholder1234567890',
+    HOPAY_CALLBACK_URL:'https://api.example.com/v1/billing/callback',
+    HOPAY_FINISH_URL:'https://studio.example.com/?payment=return',
+  }),gateway:async()=>{gatewayCalls++;return 'https://app.sandbox.midtrans.com/snap/v4/redirection/test';}});
   const headers = (token:string) => ({cookie:`__Host-hoople_session=${token}`,origin:settings.webOrigin});
   try {
     const role = await pool.query<{rolbypassrls:boolean}>(
@@ -33,6 +40,29 @@ test('real PostgreSQL: creator sessions, CRUD and cross-tenant RLS', {
     assert.equal(createB.statusCode,201,createB.body);
     const orgA = createA.json().id as string;
     const orgB = createB.json().id as string;
+
+    // Staging billing: price is server-owned, idempotent, and isolated per tenant.
+    const idempotencyKey=randomUUID();
+    const payUrl=`/v1/orgs/${orgA}/billing/checkout`;
+    const payment=await app.inject({method:'POST',url:payUrl,headers:headers(a.token),
+      payload:{planId:'starter',idempotencyKey}});
+    assert.equal(payment.statusCode,201,payment.body);
+    assert.equal(payment.json().amount,29900);
+    assert.equal(payment.json().state,'awaiting_verification');
+    const replay=await app.inject({method:'POST',url:payUrl,headers:headers(a.token),
+      payload:{planId:'starter',idempotencyKey}});
+    assert.equal(replay.statusCode,200,replay.body);
+    assert.equal(replay.json().checkoutId,payment.json().checkoutId);
+    assert.equal(gatewayCalls,1);
+    const crossTenantCheckout=await app.inject({method:'GET',
+      url:`/v1/orgs/${orgA}/billing/checkouts/${payment.json().checkoutId}`,headers:headers(b.token)});
+    assert.equal(crossTenantCheckout.statusCode,404,crossTenantCheckout.body);
+    const fakeNotification=await app.inject({method:'POST',url:'/v1/billing/callback',
+      payload:{transaction_status:'settlement',order_id:payment.json().checkoutId}});
+    assert.equal(fakeNotification.statusCode,202,fakeNotification.body);
+    const paymentAfter=await app.inject({method:'GET',
+      url:`/v1/orgs/${orgA}/billing/checkouts/${payment.json().checkoutId}`,headers:headers(a.token)});
+    assert.equal(paymentAfter.json().state,'awaiting_verification');
 
     const listA = await app.inject({method:'GET',url:'/v1/orgs',headers:headers(a.token)});
     const listB = await app.inject({method:'GET',url:'/v1/orgs',headers:headers(b.token)});
@@ -137,6 +167,8 @@ test('real PostgreSQL: creator sessions, CRUD and cross-tenant RLS', {
       assert.equal(unauthorized.rows.length,0);
       const kits = await client.query('SELECT id FROM brand_kits WHERE organization_id=$1',[orgA]);
       assert.equal(kits.rows.length,0);
+      const payments=await client.query('SELECT id FROM billing_checkout_requests WHERE organization_id=$1',[orgA]);
+      assert.equal(payments.rows.length,0);
     });
 
     const chosen = await app.inject({method:'PUT',url:'/v1/workspaces/active',

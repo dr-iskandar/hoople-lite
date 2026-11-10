@@ -4,6 +4,8 @@ import type { AuthSettings, DbPool, OidcProvider } from './creator-auth.js';
 import { registerCreatorRoutes } from './creator-routes.js';
 import { registerOrganizationRoutes } from './organization-routes.js';
 import { registerCreatorEngineRoutes } from './creator-engine-routes.js';
+import { registerBillingRoutes } from './billing-routes.js';
+import type {HopayGateway,HopaySettings} from './hopay.js';
 
 export interface ReadyDatabase {
   query(sql: string): Promise<unknown>;
@@ -12,7 +14,7 @@ export interface ReadyDatabase {
 export function buildApp(database?: ReadyDatabase, identity?: {
   settings?: AuthSettings;
   provider?: OidcProvider;
-}) {
+}, billing?:{settings?:HopaySettings;gateway?:HopayGateway}) {
   const app = Fastify({ logger: false, bodyLimit: 512 * 1024, requestTimeout: 15_000 });
   void app.register(cookie);
 
@@ -36,5 +38,6 @@ export function buildApp(database?: ReadyDatabase, identity?: {
   registerCreatorRoutes(app,pool,identity?.settings,identity?.provider);
   registerOrganizationRoutes(app,pool,identity?.settings);
   registerCreatorEngineRoutes(app,pool,identity?.settings);
+  registerBillingRoutes(app,pool,identity?.settings,billing?.settings,billing?.gateway);
   return app;
 }
