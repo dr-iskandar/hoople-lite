@@ -6,7 +6,7 @@ Last updated: 2 November 2026. Canonical source: `https://github.com/dr-iskandar
 
 Hoople lite lets Indonesian event organizers, agencies, brands and communities build browser-based interactive activities. The present application is a **React/Vite frontend prototype**, not an operating SaaS. The larger Hoople vision is an end-to-end event and community platform; no release dates are committed.
 
-**P0 + Stage 1 private draft CRUD code:** `apps/api` contains Fastify/TypeScript health checks, creator OIDC code/PKCE + cookie sessions, organization/workspace CRUD, authenticated brand kit/experience/mission draft CRUD, legacy import, and PostgreSQL migrations for identities, organizations, audit, sessions and builder entities. RLS and role checks are enforced in code/policies. React dashboard offers **opt-in** session/workspace and one-way import if `VITE_API_BASE_URL` is set; the interactive editor is still localStorage-based. No real staging IdP or live production database has been configured.
+**P0 + Stage 1 private draft CRUD and HoPay staging checkout code:** `apps/api` contains Fastify/TypeScript health checks, creator OIDC code/PKCE + cookie sessions, organization/workspace CRUD, authenticated brand kit/experience/mission draft CRUD, legacy import, and PostgreSQL migrations for identities, organizations, audit, sessions, builder entities and staging checkout requests. RLS and role checks are enforced in code/policies. React dashboard offers **opt-in** session/workspace and one-way import if `VITE_API_BASE_URL` is set; the interactive editor is still localStorage-based. The pricing modal can initiate authenticated HoPay staging checkout; its unsigned callback intentionally cannot activate plans. See [`HOPAY_STAGING_INTEGRATION.md`](./HOPAY_STAGING_INTEGRATION.md). No real staging IdP or live production database has been configured.
 
 This product evolved iteratively from a quest studio into a hybrid editor with branding, ID/EN, quest-style onboarding, mission types, rewards, simulated scheduling, AI-assisted draft templates and a five-stage roadmap. It was rebranded from QuestPop to Hoople lite with the owner's logo and purple/black/white identity. Historical `questpop-*` browser storage keys remain for backwards compatibility.
 
@@ -34,7 +34,7 @@ This product evolved iteratively from a quest studio into a hybrid editor with b
 | Branding | Local colors, uploads and cover crop | Brand kits + asset pipeline / CDN |
 | Scheduling | Browser countdown / UI gate | Server-enforced release access gate |
 | AI | Local templates and external JSON import | Server LLM adapter, moderation, quota |
-| Pricing | Illustrative sub-Rp100k tiers | Real billing/refunds after legal and ops review |
+| Pricing | Illustrative sub-Rp100k tiers, staging-only one-off checkout initiation | Webhook verification, plans/entitlements, real billing/refunds after legal and ops review |
 
 **Security warning:** Current `#play=` links embed client-readable event JSON. They cannot protect correct quiz answers, mission secrets, prizes, event embargoes or sensitive attendee data. Do not reuse this design for real-world access control, paid events or regulated data.
 
@@ -82,7 +82,7 @@ Styling lives in component CSS plus inherited global styles. Check cascade, focu
 ### P2 — Event platform (next Hoople product)
 
 - Parent Event, organizer workspaces, landing page builder, events, ticket tiers, inventory, registration and class/session booking.
-- Midtrans checkout, signature-verified and idempotent webhooks, receipts, reconciliation and refunds.
+- HoPay/Midtrans verified-status inquiry or signed webhook contract, receipts, reconciliation, entitlement activation and refunds. Staging checkout initiation alone is not billing.
 - Crew-scoped QR ticket/session check-in/out, operational dashboard and exports.
 - Managed subdomains and custom domain DNS/TLS verification.
 

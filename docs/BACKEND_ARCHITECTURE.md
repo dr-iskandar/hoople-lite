@@ -1,6 +1,8 @@
 # Hoople lite — Experience Backend Architecture Blueprint
 
-Status: **DESIGN / STAGE 1 AUTH + PRIVATE DRAFT CRUD IMPLEMENTED IN CODE** · 2 November 2026 · React v0.9 / API v0.1
+Status: **DESIGN / STAGE 1 AUTH + PRIVATE DRAFT CRUD + HOPAY STAGING INITIATION IMPLEMENTED IN CODE** · 10 November 2026 · React v0.9 / API v0.1
+
+HoPay staging initiates one-time test checkouts only. Callback verification, settlement reconciliation and plan activation are **not** implemented; see [`HOPAY_STAGING_INTEGRATION.md`](./HOPAY_STAGING_INTEGRATION.md). Billing and subscription notes below remain future architecture, not implemented functionality.
 
 Target: multi-tenant SaaS for Indonesian EO, agencies, brands, companies and communities. The current React Sites demo uses local browser state and is **not** a secure production runtime.
 
@@ -17,7 +19,7 @@ Code in `apps/api` now includes Fastify liveness/readiness, OIDC creator login a
 | Media | Cloudflare R2 with presigned upload + private quarantine | Scalable photos and cropped branded assets |
 | Jobs | Queue + background worker | Media safety, image variants, AI, billing reconciliation |
 | AI | Server adapter for configurable LLM provider, strict JSON schema | Generate mission/question text; no media generation |
-| Checkout | Midtrans with verified server webhook | Indonesia payment gateway |
+| Checkout | HoPay staging adapter (wrapping Midtrans) + future verified server webhook | Indonesia payment gateway, no entitlements until verification |
 | Domains | Planned Hoople subdomains + verified custom hostnames | White-label for agencies/brands |
 | Auth | OIDC/email creators + RBAC; pseudonymous participant session | Low event-entry friction |
 

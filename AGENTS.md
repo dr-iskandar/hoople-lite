@@ -8,7 +8,8 @@ This instruction file is for Codex, Claude Code, Cursor, Gemini and other AI-ass
 2. `docs/DEVELOPER_HANDOFF.md` — architecture, file map, known risks and next backlog.
 3. `docs/VIBE_CODING_WORKFLOW.md` — branch, review, tests, security and handoff.
 4. `docs/BACKEND_ARCHITECTURE.md` and `docs/EVENT_PLATFORM_ROADMAP.md` if touching a future server feature.
-5. The exact React components and connected data/model files. Inspect `git status`, active branch and the diff before edits.
+5. `docs/HOPAY_STAGING_INTEGRATION.md` when touching pricing, checkout, callbacks, entitlements or payment credentials.
+6. The exact React components and connected data/model files. Inspect `git status`, active branch and the diff before edits.
 
 ## Repository and deployment
 
@@ -39,7 +40,8 @@ This instruction file is for Codex, Claude Code, Cursor, Gemini and other AI-ass
 
 ## Non-negotiable security / truthfulness
 
-- The editor is a `localStorage` prototype; AI wizard uses local templates/JSON import. The dashboard now offers **opt-in** API session/workspace access and a one-way import into cloud *drafts* when `VITE_API_BASE_URL` is configured. `apps/api` includes Stage 1 OIDC/session/workspace and authenticated draft CRUD, but has **no provisioned production infrastructure or browser-to-server autosave**. **No operational event backend, payment gateway, attendee account system, server-authoritative QR or secure scheduled embargo exists.**
+- The editor is a `localStorage` prototype; AI wizard uses local templates/JSON import. The dashboard offers **opt-in** API session/workspace access and one-way import into cloud *drafts* when `VITE_API_BASE_URL` is configured. `apps/api` includes Stage 1 OIDC/session/workspace and authenticated draft CRUD, but has **no provisioned production infrastructure or browser-to-server autosave**. HoPay **staging checkout initiation** exists; its unsigned callbacks are intentionally quarantined, it does **not verify settlement or activate a plan**, and must not be advertised as production billing. **No operational event backend, production payment flow, attendee account system, server-authoritative QR or secure scheduled embargo exists.**
+- Payment secrets must exist only in server environment/secret manager, never in React, `VITE_*`, tickets, logs or commits. Do not trust redirect, client-submitted amount or an unverified webhook to mark an order paid.
 - Importing to a cloud draft must never delete, overwrite, or silently replace `questpop-*` local data. Private validation material must never enter public responses. Do not infer deployment readiness from scaffold code.
 - A working prototype button is not evidence of production readiness. Clearly identify simulations.
 - Do not delete historical `questpop-*` browser storage keys without a tested migration plan.
